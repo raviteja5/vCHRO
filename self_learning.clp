@@ -1,4 +1,5 @@
 ;;this is an example of learning about animal - we can liverage this on decision making error and adding new rule (if not defined)
+;;REF: https://www.csie.ntu.edu.tw/~sylee/courses/clips/design.htm
 (deftemplate node
    (slot name)
    (slot type)
