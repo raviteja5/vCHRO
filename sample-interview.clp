@@ -1,5 +1,4 @@
-;;templates ********************
-
+;;***************templates of question and answer**************
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
     (slot ident) ;; name of the question
@@ -10,8 +9,8 @@
     (slot text)
 )
 
-;;facts ********************
-
+;;************facts*************
+;;question to test personality dimenstion of the candidate
 (deffacts personality-question
 	(question
 		(ident trustworthyness)
@@ -46,6 +45,7 @@
 )
 
 ;;rules ********************
+;;elimination heuristic - trusworthyness is a must
 (defrule disqualified
 	(answer (ident trustworthyness) (text ?trust))
 	
@@ -54,7 +54,7 @@
 	(assert (disqualified))
 	(printout t "candidate disqualified" crlf)
 )
-
+;;all traits full marks - is an exceptional candidate
 (defrule exceptional
 	(answer (ident trustworthyness) (text 5))
 	(answer (ident neuroticism) (text 5))
@@ -66,7 +66,7 @@
 	(assert (exceptional))
 	(printout t "exceptional candidate" crlf)
 )
-
+;;to be a good candidate >=25 score
 (defrule good
 	(answer (ident trustworthyness) (text ?trust))
 	(answer (ident neuroticism) (text ?neuro))
@@ -79,7 +79,7 @@
 	(assert (good))
 	(printout t "good candidate" crlf)
 )
-
+;;any score <25 is considered as poor candidate
 (defrule poor
 	(answer (ident trustworthyness) (text ?trust))
 	(answer (ident neuroticism) (text ?neuro))
@@ -93,7 +93,7 @@
 	(printout t "poor candidate" crlf)
 )
 
-;;asking rule
+;;rule to get the answer if not given put a rule so it prompts later
 (defrule supply-answers
 	(answer (ident ?id))
 	(not (answer (ident ?id)))
@@ -102,8 +102,7 @@
 	(assert (ask ?id))
 )
 
-;;functions
-
+;;functions called from ask-question-by-id
 (deffunction ask-user (?question)
 	"Ask a question and return the answer"
 	(bind ?answer "")
@@ -112,7 +111,7 @@
 	(return ?answer)
 )
 
-;;ask by id
+;;rule what question to ask and what question not-to as it's answered already
 (defrule ask-question-by-id
 	"ask user by id"
 	(question (ident ?id) (text ?text))
