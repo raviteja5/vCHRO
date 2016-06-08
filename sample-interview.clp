@@ -1,27 +1,5 @@
 ;;templates ********************
 
-(deftemplate person "info about person"
-	(slot name)
-)
-
-(deftemplate personality "Dimention of judgement - personality aspect"
-	(slot trustworthyness)
-	(slot neuroticism)
-	(slot conscientiousness)
-	(slot extrovertedness)
-	(slot agreeableness)
-	(slot coachability)
-)
-
-(deftemplate behaviorism "Dimention of judgement - behavior aspect"
-	(slot trustworthyness)
-	(slot neuroticism)
-	(slot conscientiousness)
-	(slot extrovertedness)
-	(slot agreeableness)
-	(slot coachability)
-)
-
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
     (slot ident) ;; name of the question
@@ -68,6 +46,14 @@
 )
 
 ;;rules ********************
+(defrule disqualified
+	(answer (ident trustworthyness) (text ?trust))
+	
+	(test (< ?trust 5))
+	=>
+	(assert (disqualified))
+	(printout t "candidate disqualified" crlf)
+)
 
 (defrule exceptional
 	(answer (ident trustworthyness) (text 5))
@@ -89,7 +75,7 @@
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
 	
-	(test (>= (+ ?trust ?neuro ?consc ?extr ?agre ?coac)) 25) ;;if sum >= 25
+	(test (>= (+ ?trust ?neuro ?consc ?extr ?agre ?coac) 25)) ;;if sum >= 25
 	=>
 	(assert (good))
 	(printout t "good candidate" crlf)
@@ -103,7 +89,7 @@
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
 	
-	(test (< (+ ?trust ?neuro ?consc ?extr ?agre ?coac)) 25) ;;if sum >= 25
+	(test (< (+ ?trust ?neuro ?consc ?extr ?agre ?coac) 25)) ;;if sum < 25
 	=>
 	(assert (poor))
 	(printout t "poor candidate" crlf)
@@ -132,10 +118,10 @@
 (defrule ask-question-by-id
 	"ask user by id"
 	(question (ident ?id) (text ?text))
-	(not (answer (ident ?id))
+	(not (answer (ident ?id)))
 	?ask <- (ask ?id)
 	=>
 	(retract ?ask)
-	(bind ?answer (ask-user ?text))
-	(assert (answer (ident ?id) (text ?answer)))
+	(bind ?ans (ask-user ?text))
+	(assert (answer (ident ?id) (text ?ans)))
 )
