@@ -61,7 +61,7 @@
 	(answer (ident conscientiousness) (text 5))
 	(answer (ident extrovertedness) (text 5))
 	(answer (ident agreeableness) (text 5))
-	(answer (ident coachability) (text 5)) 
+	(answer (ident coachability) (text 5))
 	=>
 	(assert (exceptional))
 	(printout t "exceptional candidate" crlf)
@@ -74,7 +74,6 @@
 	(answer (ident extrovertedness) (text ?extr))
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
-	
 	(test (>= (+ ?trust ?neuro ?consc ?extr ?agre ?coac) 25)) ;;if sum >= 25
 	=>
 	(assert (good))
@@ -88,7 +87,6 @@
 	(answer (ident extrovertedness) (text ?extr))
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
-	
 	(test (< (+ ?trust ?neuro ?consc ?extr ?agre ?coac) 25)) ;;if sum < 25
 	=>
 	(assert (poor))
