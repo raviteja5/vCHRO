@@ -9,6 +9,14 @@
     (slot text)
 )
 
+(deftemplate idealEmployee
+	(slot trust)
+	(slot neuro)
+	(slot consci)
+	(slot extro)
+	(slot agree)
+	(slot coach)
+)
 ;;************facts*************
 ;;question to test personality dimenstion of the candidate
 (deffacts personality-question
@@ -18,11 +26,11 @@
 	)
 	(question
 		(ident neuroticism)
-		(text "On a scale of 0~5 how do you rate your newuroticism (0-5)?")
+		(text "On a scale of 0~5 how do you rate your neuroticism (0-5)?")
 	)
 	(question
 		(ident conscientiousness)
-		(text "On a scale of 0~5 how do you rate your neuroticism (0-5)?")
+		(text "On a scale of 0~5 how do you rate your conscientiousness (0-5)?")
 	)
 	(question
 		(ident extrovertedness)
@@ -74,7 +82,8 @@
 	(answer (ident extrovertedness) (text ?extr))
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
-	(test (>= (+ ?trust ?neuro ?consc ?extr ?agre ?coac) 25)) ;;if sum >= 25
+	(idealEmployee (trust ?t) (neuro ?n) (consci ?c) (extro ?e) (agree ?a) (coach ?c))
+	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?c ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 25)) ;;if sum >= 25
 	=>
 	(assert (good))
 	(printout t "good candidate" crlf)
@@ -87,7 +96,8 @@
 	(answer (ident extrovertedness) (text ?extr))
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
-	(test (< (+ ?trust ?neuro ?consc ?extr ?agre ?coac) 25)) ;;if sum < 25
+	(idealEmployee (trust ?t) (neuro ?n) (consci ?c) (extro ?e) (agree ?a) (coach ?c))
+	(test (< (+ (* ?t ?trust) (* ?n ?neuro) (* ?c ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 25)) ;;if sum < 25
 	=>
 	(assert (poor))
 	(printout t "poor candidate" crlf)
