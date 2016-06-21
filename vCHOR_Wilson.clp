@@ -69,7 +69,7 @@
 	(answer (ident workingvisa) (text ?wkv))
 	(test (< ?wkv 1))
 	=>
-	(ap = 0)
+	;(ap = 0)
 	(assert (disqualified))
 	(printout t "Candidate disqualified because of working VISA is needed" crlf)
 )
@@ -115,7 +115,7 @@
 (defrule poor
 	(answer (ident resumecontent) (text ?resu))
 	(answer (ident schoolrating) (text ?scho))
-	(answer (ident relatedworkexperience) (text ?rwke)
+	(answer (ident relatedworkexperience) (text ?rwke))
 	(answer (ident codingconvention) (text ?cdct))
 	(answer (ident previouscompanyrating) (text ?pcr))
 	(answer (ident codingsolution) (text ?coso))
