@@ -63,7 +63,7 @@
 	(ask explanation)
 )
 
-;;Armir rules ********************
+;;Arash rules ********************
 ;;elimination heuristic - Would not hire foreigner
 (defrule disqualifiedDueToWorkingvisa
 	(answer (ident workingvisa) (text ?wkv))
