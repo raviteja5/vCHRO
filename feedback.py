@@ -1,9 +1,11 @@
 import re
 
-vals=[0,0,0,0,0,0]
+#set of traits
 traits = ["trustworthy","neuroticism","conscientiousness","extrovertedness","agreeableness","coachable"]
-success = 0
+vals=[0,0,0,0,0,0]  #default values for traits
+success = 0     #initialize success
 
+#Update the Ideal concept, after getting values for each employee
 def update():
     diff = []
     for x in range(0, len(defs)):
@@ -20,7 +22,7 @@ def update():
             defs[minm] -= 0.2
     write_to_file()
 
-
+#Write the values to idealEmployeeConcept.txt
 def write_to_file():
     f = open('idealEmployeeConcept','w')
     f.write("(idealEmployee ")
@@ -33,19 +35,22 @@ def write_to_file():
     print "Ideal employee concept updated with values:", defs
 
 
+#Read the values to idealEmployeeConcept.txt
 def read_from_file():
     global defs
     f = open('idealEmployeeConcept','r')
     line = f.readline()
     defs = map(float, re.findall("\d+\.\d+",line))
 
-
+############################## Code starts execution here #######################################
 yn = raw_input("Would you like to rate an employee after observation for 5 months (y/n)? ")
 while yn == 'y':
     read_from_file()
     print("For all the following questions, 5.0 is best and 0.0 is poor:")
+    # Read the value for each trait
     for t in traits:
         vals[traits.index(t)] = input("How would you rate "+ t +" after 5 months (0~5)? ")
+    # Read the value for rating of employee
     success = raw_input("How would you rate the employee on the whole (0~5)? ")
     update()
     yn = raw_input("Would you like to rate another employee? ")
