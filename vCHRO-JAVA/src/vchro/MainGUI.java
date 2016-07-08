@@ -5,8 +5,24 @@
  */
 package vchro;
 
+import java.awt.ScrollPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import jess.Deffacts;
+import jess.Fact;
+import jess.JessException;
+import jess.Value;
 
 /**
  *
@@ -15,14 +31,23 @@ import java.util.logging.Logger;
 public class MainGUI extends javax.swing.JFrame implements ReteControllerEventListener{
     String clipFile;
     ReteController clipController;
+    ArrayList<String> questionList;
+    Iterator<String> questionIterator;
     /**
      * Creates new form MainGUI
      */
     public MainGUI() {
         initComponents();
-        clipFile = "simple-interview.clp";
-        clipController = new ReteController(clipFile);
+        //clipFile = "/Users/mamun028/Documents/GATECH-MS-CS/Summer16-CS6795/vCHRO/vCHRO-Java/src/vchro/java/interview.clp";
+        clipFile = "interview.clp";
+        clipController = new ReteController();
         clipController.addListener(this);
+        try {
+            clipController.loadClipFile(clipFile);
+        } catch (JessException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        questionList = new ArrayList<String>();
     }
 
     /**
@@ -34,6 +59,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        btnGrpRadio = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         txtCandidateName = new javax.swing.JTextField();
         btnStart = new javax.swing.JButton();
@@ -43,7 +69,6 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         jProgressBar1 = new javax.swing.JProgressBar();
         btnSubmit = new javax.swing.JButton();
         panelAnswerArea = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
         btnCancel = new javax.swing.JButton();
         lblStatus = new javax.swing.JLabel();
 
@@ -58,37 +83,50 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
 
         btnStart.setText("Start");
         btnStart.setName("btnStart"); // NOI18N
+        btnStart.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnStartMouseClicked(evt);
+            }
+        });
 
         txtQuestion.setColumns(20);
+        txtQuestion.setLineWrap(true);
         txtQuestion.setRows(5);
         txtQuestion.setText("Question Area");
         txtQuestion.setName("txtQuestion"); // NOI18N
         jScrollPane1.setViewportView(txtQuestion);
 
         btnSubmit.setText("Submit");
+        btnSubmit.setEnabled(false);
         btnSubmit.setName("btnSubmit"); // NOI18N
-
-        jLabel2.setText("Dynamic Answer Area");
+        btnSubmit.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnSubmitMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelAnswerAreaLayout = new javax.swing.GroupLayout(panelAnswerArea);
         panelAnswerArea.setLayout(panelAnswerAreaLayout);
         panelAnswerAreaLayout.setHorizontalGroup(
             panelAnswerAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelAnswerAreaLayout.createSequentialGroup()
-                .addGap(116, 116, 116)
-                .addComponent(jLabel2)
-                .addContainerGap(206, Short.MAX_VALUE))
+            .addGap(0, 459, Short.MAX_VALUE)
         );
         panelAnswerAreaLayout.setVerticalGroup(
             panelAnswerAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelAnswerAreaLayout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jLabel2)
-                .addContainerGap(59, Short.MAX_VALUE))
+            .addGap(0, 165, Short.MAX_VALUE)
         );
 
         btnCancel.setText("Cancel");
+        btnCancel.setEnabled(false);
         btnCancel.setName("btnCancel"); // NOI18N
+        btnCancel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnCancelMouseClicked(evt);
+            }
+        });
+
+        lblStatus.setText("status: initializing...");
+        lblStatus.setToolTipText("");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -116,7 +154,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                                     .addGap(18, 18, 18)
                                     .addComponent(btnSubmit))
                                 .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
                                 .addComponent(panelAnswerArea, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(lblStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -132,17 +170,17 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnStart))
-                .addGap(27, 27, 27)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(panelAnswerArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSubmit)
                     .addComponent(btnCancel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
                 .addComponent(lblStatus))
         );
 
@@ -150,6 +188,111 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
+        if(btnStart.isEnabled()){
+            try {
+                questionList.addAll(getCTOInterviewQus());
+                questionIterator = questionList.iterator();
+                if(questionIterator.hasNext()){
+                    String[] question = questionIterator.next().split("#");
+                    if(question.length != 2){
+                        JOptionPane.showMessageDialog(this, "CTO Question Parsing Error!! (Don't use #)");
+                        return;
+                    }
+                    ArrayList answerList = new ArrayList();
+                    int answerLen = clipController.getRatingScaleMax(question[0])-clipController.getRatingScaleMin(question[0])+1;
+                    for(int i=0;i < answerLen;i+=clipController.getRatingScaleStep(question[0])){
+                        String radValue = Integer.toString(clipController.getRatingScaleMin(question[0])+i);
+                        answerList.add(new JRadioButton(radValue));
+                    }
+                    txtQuestion.setText(question[1]);
+                    radioButtonPanelRedraw(answerList);
+                    btnStart.setEnabled(false);
+                    btnSubmit.setText(questionIterator.hasNext() ? "Next" : "Finish");
+                    btnSubmit.setEnabled(false);
+                    btnCancel.setEnabled(true);
+                    lblStatus.setText("Interview in progress... Testing ["+question[0]+"]");
+                }else{
+                    JOptionPane.showMessageDialog(this, "Program can't continue!! No question to ask");
+                    btnStart.setEnabled(true);
+                    btnSubmit.setText("Next");
+                }
+                
+                jProgressBar1.setIndeterminate(true);
+                
+            } catch (JessException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "CTO Question Parsing Error!!");
+            }
+        }
+        
+    }//GEN-LAST:event_btnStartMouseClicked
+
+    private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
+        if(btnCancel.isEnabled()){
+            if(JOptionPane.showConfirmDialog(this, "All settings will lost, do you want to exit?") == 0){
+                System.exit(0);
+            }
+        }
+    }//GEN-LAST:event_btnCancelMouseClicked
+
+    private void btnSubmitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnSubmitMouseClicked
+        String testQuesIdent = lblStatus.getText();
+        testQuesIdent = testQuesIdent.substring(testQuesIdent.indexOf("[") + 1);
+        testQuesIdent = testQuesIdent.substring(0, testQuesIdent.indexOf("]"));
+        String selectedValue = getSelectedRadBtn();
+        if(selectedValue == null || testQuesIdent == null || testQuesIdent.isEmpty()){
+            JOptionPane.showMessageDialog(this, "Something wrong with selected value/test question - found null!");
+            return;
+        }
+        String assertAnswer = "(assert (answer (ident "+testQuesIdent+") (text "+selectedValue+")))";
+        try {
+            clipController.engine.eval(assertAnswer);
+            System.out.println(assertAnswer);
+        } catch (JessException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(((JButton)evt.getSource()).getText().equalsIgnoreCase("Next")){
+            
+            //submit this answer & decide what to do
+            
+            //prepare next question
+            if(questionIterator.hasNext()){
+                String[] question = questionIterator.next().split("#");
+                if(question.length != 2){
+                    JOptionPane.showMessageDialog(this, "CTO Question Parsing Error!! (Don't use #)");
+                    return;
+                }
+                ArrayList answerList = new ArrayList();
+                int answerLen = clipController.getRatingScaleMax(question[0])-clipController.getRatingScaleMin(question[0])+1;
+                for(int i=0;i < answerLen;i+=clipController.getRatingScaleStep(question[0])){
+                    String radValue = Integer.toString(clipController.getRatingScaleMin(question[0])+i);
+                    answerList.add(new JRadioButton(radValue));
+                }
+                txtQuestion.setText(question[1]);
+                radioButtonPanelRedraw(answerList);
+                btnStart.setEnabled(false);
+                btnSubmit.setText(questionIterator.hasNext() ? "Next" : "Finish");
+                btnSubmit.setEnabled(false);
+                btnCancel.setEnabled(true);
+                lblStatus.setText("Interview in progress... Testing ["+question[0]+"]");
+            }else{
+                JOptionPane.showMessageDialog(this, "Program can't continue!! No question to ask");
+                btnStart.setEnabled(true);
+                btnSubmit.setText("ERROR");
+                return;
+            }
+                
+            
+        }else if(((JButton)evt.getSource()).getText().equalsIgnoreCase("Finish")){
+            lblStatus.setText("Interview Complete!");
+            jProgressBar1.setValue(jProgressBar1.getMaximum());
+            jProgressBar1.setIndeterminate(false);
+            btnSubmit.setEnabled(false);
+        }
+        
+    }//GEN-LAST:event_btnSubmitMouseClicked
     
     
     
@@ -183,17 +326,19 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainGUI().setVisible(true);
+                MainGUI program = new MainGUI();
+                program.pack();
+                program.setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
+    private javax.swing.ButtonGroup btnGrpRadio;
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnSubmit;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
@@ -205,13 +350,81 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
 
     @Override
     public void clipFileLoaded() {
-        Logger.getLogger(ReteController.class.getName()).log(Level.INFO, "clipFileLoaded");
-        lblStatus.setText("Agent File Loaded - "+clipFile);
+        Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "clipFileLoaded");
+        lblStatus.setText("Agent File Loaded, pleaset start");
     }
 
     @Override
     public void clipFileError(String msg) {
-        Logger.getLogger(ReteController.class.getName()).log(Level.INFO, "Clip File Error - "+msg);
+        Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Clip File Error - "+msg);
         lblStatus.setText("Error in agent file loading!!");
     }
+    
+    public ArrayList<String> getCTOInterviewQus() throws JessException{
+        if(clipController==null)return null;
+        Deffacts ctoQuestions = clipController.engine.findDeffacts("technocalquestion");
+        ArrayList<String> list = new ArrayList<String>();
+        for(int i=0;i < ctoQuestions.getNFacts();i++){
+            Fact f = ctoQuestions.getFact(i);
+            Value v = f.getSlotValue("text");
+            Value vIdent = f.getSlotValue("ident");
+            list.add(vIdent.stringValue(clipController.engine.getGlobalContext())+"#"+v.stringValue(clipController.engine.getGlobalContext()));
+        }
+        return list;
+    }
+    
+    //add result panel items
+    private void radioButtonPanelRedraw(ArrayList radBtns){
+       //reset the button group
+       btnGrpRadio.clearSelection();
+       for (Enumeration<AbstractButton> btns = btnGrpRadio.getElements(); btns.hasMoreElements();) {
+            btnGrpRadio.remove(btns.nextElement());
+       }
+       panelAnswerArea.removeAll();
+       JPanel panelRadio = new JPanel();
+       
+       //add action listener
+       for(int i=0; i<radBtns.size(); i++){
+           JRadioButton radBtn = (JRadioButton)radBtns.get(i);
+           radBtn.setSelected(false);
+           radBtn.addActionListener(new ActionListener(){
+               @Override
+               public void actionPerformed(ActionEvent event) {
+                   //JRadioButton radSelected = (JRadioButton) event.getSource();
+                   btnSubmit.setEnabled(true);
+               }
+               
+           });
+           btnGrpRadio.add(radBtn);
+           panelRadio.add(radBtn);
+       }
+       // create scroll pane
+       ScrollPane scrollPane = new ScrollPane();
+       scrollPane.add(panelRadio);
+       scrollPane.setSize(440,100);
+        
+       //scrollPane.addActionListener(actionListener);
+        
+       // combine the panels
+       panelAnswerArea.add(scrollPane);
+       panelAnswerArea.revalidate();
+   }
+   
+   private synchronized String getSelectedRadBtn(){
+       //System.out.println("No of btn in btngrp: "+btnGrpRadio.getButtonCount());
+       String selectedVal = null;
+       for (Enumeration<AbstractButton> buttons = btnGrpRadio.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+            if (button.isSelected()) {
+                selectedVal = button.getText();
+                //reset the button group
+                break;
+            }
+        }
+        btnGrpRadio.clearSelection();
+        for (Enumeration<AbstractButton> btns = btnGrpRadio.getElements(); btns.hasMoreElements();) {
+             btnGrpRadio.remove(btns.nextElement());
+        }
+        return selectedVal;
+   }
 }
