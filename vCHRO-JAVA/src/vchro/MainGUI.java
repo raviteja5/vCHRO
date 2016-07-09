@@ -15,11 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.SwingConstants;
 import jess.Deffacts;
 import jess.Fact;
 import jess.JessException;
@@ -41,14 +39,10 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
      */
     public MainGUI() {
         initComponents();
-        clipFile = "interview.clp";
+        clipFile = "vchro/interview.clp";
         clipController = new ReteController();
         clipController.addListener(this);
-        try {
-            clipController.loadClipFile(clipFile);
-        } catch (JessException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        clipController.loadClipFile(clipFile);
         questionList = new ArrayList<String>();
     }
 
@@ -383,6 +377,8 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     public void clipFileError(String msg) {
         Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Clip File Error - {0}", msg);
         lblStatus.setText("Error in agent file loading!!");
+        JOptionPane.showMessageDialog(this, msg);
+        System.exit(1);
     }
     
     public ArrayList<String> getCTOInterviewQus() throws JessException{

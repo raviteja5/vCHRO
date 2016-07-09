@@ -67,54 +67,65 @@ public class ReteController {
         Logger.getLogger(ReteController.class.getName()).log(Level.INFO, "Adding Listener "+listener.getClass().getName());
     }
     
-    public void loadClipFile(String clipScriptFilePath) throws JessException{
-        FileReader reader = null;
-        String command = "";
-        try {
-            URL fileUrl = getClass().getResource(clipScriptFilePath);
-            File file = new File(fileUrl.toURI());
-            if (file.exists()) {
-                reader = new FileReader(file);
-                int i = 0;
-                while (i != -1) {
-                    i = reader.read();
-                    command += (char) i;
-                }
-            }else {//let listeners know that file not found and act accordingly
+    public void loadClipFile(String clipScriptFilePath){
+//        FileReader reader = null;
+//        String command = "";
+//        try {
+//            URL fileUrl = getClass().getResource(clipScriptFilePath);
+//            File file = new File(fileUrl.toURI());
+//            if (file.exists()) {
+//                reader = new FileReader(file);
+//                int i = 0;
+//                while (i != -1) {
+//                    i = reader.read();
+//                    command += (char) i;
+//                }
+//            }else {//let listeners know that file not found and act accordingly
+//                for(ReteControllerEventListener l : listeners){
+//                    l.clipFileError("File not found");
+//                }
+//                return;
+//            }
+//        } catch (URISyntaxException | FileNotFoundException ex) {
+//            Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
+//            for(ReteControllerEventListener l : listeners){
+//                l.clipFileError(ex.getMessage());
+//            }
+//        } catch (IOException ex) {
+//            Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
+//            for(ReteControllerEventListener l : listeners){
+//                l.clipFileError(ex.getMessage());
+//            }
+//            
+//        } finally {
+//            if (reader != null) {
+//                try {
+//                    reader.close();
+//                } catch (IOException ex) {
+//                    for(ReteControllerEventListener l : listeners){
+//                        l.clipFileError(ex.getMessage());
+//                    }
+//                    Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
+//        }
+        
+        try{
+            engine.clear();
+            if(engine.batch(clipScriptFilePath).toString().equalsIgnoreCase("TRUE")){
+                engine.reset();
                 for(ReteControllerEventListener l : listeners){
-                    l.clipFileError("File not found");
+                        l.clipFileLoaded();
                 }
-                return;
-            }
-        } catch (URISyntaxException | FileNotFoundException ex) {
-            Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
-            for(ReteControllerEventListener l : listeners){
-                l.clipFileError(ex.getMessage());
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
-            for(ReteControllerEventListener l : listeners){
-                l.clipFileError(ex.getMessage());
             }
             
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
-                    for(ReteControllerEventListener l : listeners){
-                        l.clipFileError(ex.getMessage());
-                    }
-                    Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+        }catch(JessException ex){
+           for(ReteControllerEventListener l : listeners){
+                l.clipFileError("Engine failed to load/execute the file! Error: "+ex.getMessage());
+            } 
         }
-        engine.clear();
-        engine.eval(command);
-        engine.reset();
-        for(ReteControllerEventListener l : listeners){
-                l.clipFileLoaded();
-        }
+        //engine.eval(command);
+        
     }   
     
     public int getRatingScaleMax(String ident){
