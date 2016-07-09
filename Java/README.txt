@@ -1,1 +1,1 @@
-This folder contains netbeans project for vCHRO JSSE implementation
+This folder contains executable jar file - try running it!!
