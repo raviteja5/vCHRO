@@ -257,7 +257,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 System.out.println(name);
             }
         } catch (JessException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         if(((JButton)evt.getSource()).getText().equalsIgnoreCase("Next")){
             
