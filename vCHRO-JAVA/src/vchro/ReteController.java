@@ -27,6 +27,9 @@ public class ReteController {
     public Rete engine;
     private List<ReteControllerEventListener> listeners;
     private Map<String, String> mapScale; //for each ident allowable input MIN,MAX,STEP
+    public static final int INT_MODE_CTO = 1;
+    public static final int INT_MODE_CEO = 2;
+    public int interviewMode;
     
     public ReteController(){
         Logger.getLogger(ReteController.class.getName()).log(Level.INFO, "Creating Object");
@@ -55,6 +58,8 @@ public class ReteController {
         mapScale.put("extrovertedness", "0,5,1");
         mapScale.put("agreeableness", "0,5,1");
         mapScale.put("coachability", "0,5,1");
+        
+        interviewMode = INT_MODE_CTO;
     }
     
     public void addListener(ReteControllerEventListener listener){
@@ -138,11 +143,50 @@ public class ReteController {
         String advice = "";
         for(int i= 0 ;i< facts.size();i++){
             String name = facts.get(i).toString();
-            if(name.contains("advice")){
-                String[] result = name.split("result");
-                advice += " " + result[(int)(result.length-1)].replace(")", "");
+            if(name.contains("poorByCEO")){
+                return "No";
+            }else if(name.contains("goodByCEO")){
+                return "Yes/May be";
+            }else if(name.contains("exceptional")){
+                return "Yes";
+            }else if(name.contains("disqualified")){
+                return "Disqualified";
             }
         }
         return advice;
+    }
+    
+    //on an assert statment, run the engine, if any rule fires, check if disqualified return false else return true
+    public boolean isDisqualified(String assertThisAnswer) throws JessException{
+        System.out.println("Asserting# "+assertThisAnswer);
+        engine.eval(assertThisAnswer);
+        if(engine.run() > 0){
+            ArrayList<Object> facts = GetAllFacts();
+            for(int i= 0 ;i< facts.size();i++){
+                String name = facts.get(i).toString();
+                //System.out.println(name);
+                if(name.contains("disqualified")){
+                    System.out.println("Candidate is disqualified!!");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public boolean isEligbileForCEOInterview(){
+        ArrayList<Object> facts = GetAllFacts();
+        for(int i= 0 ;i< facts.size();i++){
+            String name = facts.get(i).toString();
+            if(name.contains("canAskCEO")){
+                this.interviewMode = INT_MODE_CEO;
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public int getCurrentInterviewMode(){
+        return this.interviewMode;
     }
 }

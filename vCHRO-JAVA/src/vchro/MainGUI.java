@@ -15,9 +15,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 import jess.Deffacts;
 import jess.Fact;
 import jess.JessException;
@@ -32,12 +34,13 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     ReteController clipController;
     ArrayList<String> questionList;
     Iterator<String> questionIterator;
+    String result;
+    String explanation;
     /**
      * Creates new form MainGUI
      */
     public MainGUI() {
         initComponents();
-        //clipFile = "/Users/mamun028/Documents/GATECH-MS-CS/Summer16-CS6795/vCHRO/vCHRO-Java/src/vchro/java/interview.clp";
         clipFile = "interview.clp";
         clipController = new ReteController();
         clipController.addListener(this);
@@ -68,6 +71,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         jProgressBar1 = new javax.swing.JProgressBar();
         btnSubmit = new javax.swing.JButton();
         panelAnswerArea = new javax.swing.JPanel();
+        lblResult = new javax.swing.JLabel();
         btnCancel = new javax.swing.JButton();
         lblStatus = new javax.swing.JLabel();
 
@@ -89,14 +93,15 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         });
 
         txtQuestion.setColumns(20);
-        txtQuestion.setLineWrap(true);
         txtQuestion.setRows(5);
         txtQuestion.setText("Question Area");
+        txtQuestion.setDisabledTextColor(new java.awt.Color(0, 0, 255));
+        txtQuestion.setEnabled(false);
+        txtQuestion.setMinimumSize(new java.awt.Dimension(240, 80));
         txtQuestion.setName("txtQuestion"); // NOI18N
         jScrollPane1.setViewportView(txtQuestion);
 
         btnSubmit.setText("Submit");
-        btnSubmit.setEnabled(false);
         btnSubmit.setName("btnSubmit"); // NOI18N
         btnSubmit.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -104,28 +109,34 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             }
         });
 
+        lblResult.setFont(new java.awt.Font("American Typewriter", 1, 24)); // NOI18N
+        lblResult.setForeground(new java.awt.Color(255, 51, 0));
+        lblResult.setText("Answer Area");
+
         javax.swing.GroupLayout panelAnswerAreaLayout = new javax.swing.GroupLayout(panelAnswerArea);
         panelAnswerArea.setLayout(panelAnswerAreaLayout);
         panelAnswerAreaLayout.setHorizontalGroup(
             panelAnswerAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 459, Short.MAX_VALUE)
+            .addGroup(panelAnswerAreaLayout.createSequentialGroup()
+                .addGap(159, 159, 159)
+                .addComponent(lblResult)
+                .addContainerGap(169, Short.MAX_VALUE))
         );
         panelAnswerAreaLayout.setVerticalGroup(
             panelAnswerAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 165, Short.MAX_VALUE)
+            .addGroup(panelAnswerAreaLayout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addComponent(lblResult)
+                .addContainerGap(56, Short.MAX_VALUE))
         );
 
         btnCancel.setText("Cancel");
-        btnCancel.setEnabled(false);
         btnCancel.setName("btnCancel"); // NOI18N
         btnCancel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btnCancelMouseClicked(evt);
             }
         });
-
-        lblStatus.setText("status: initializing...");
-        lblStatus.setToolTipText("");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -147,16 +158,17 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                                 .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnStart))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(btnCancel)
                                     .addGap(18, 18, 18)
                                     .addComponent(btnSubmit))
                                 .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(panelAnswerArea, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(lblStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(lblStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(46, 46, 46)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -169,17 +181,17 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnStart))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(27, 27, 27)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelAnswerArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSubmit)
                     .addComponent(btnCancel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblStatus))
         );
 
@@ -237,6 +249,8 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     }//GEN-LAST:event_btnCancelMouseClicked
 
     private void btnSubmitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnSubmitMouseClicked
+        if(!((JButton)evt.getSource()).isEnabled())return;
+        
         String testQuesIdent = lblStatus.getText();
         testQuesIdent = testQuesIdent.substring(testQuesIdent.indexOf("[") + 1);
         testQuesIdent = testQuesIdent.substring(0, testQuesIdent.indexOf("]"));
@@ -247,14 +261,16 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         }
         String assertAnswer = "(assert (answer (ident "+testQuesIdent+") (text "+selectedValue+")))";
         try {
-            clipController.engine.eval(assertAnswer);
-            System.out.println(assertAnswer);
-            
-            
-            ArrayList<Object> facts = clipController.GetAllFacts();
-            for(int i= 0 ;i< facts.size();i++){
-                String name = facts.get(i).toString();
-                System.out.println(name);
+            System.out.println("Interview Mode # "+clipController.getCurrentInterviewMode());
+            boolean isDisq = clipController.isDisqualified(assertAnswer);
+            if(isDisq){
+                btnSubmit.setText("Finish");
+            }else if(!isDisq && clipController.getCurrentInterviewMode() == ReteController.INT_MODE_CTO 
+                    && clipController.isEligbileForCEOInterview()){ //check eligible for ceo interview
+                questionList.clear();
+                questionList.addAll(getCEOInterviewQus());
+                questionIterator = questionList.iterator();
+                btnSubmit.setText("Next");
             }
         } catch (JessException ex) {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -279,9 +295,9 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 txtQuestion.setText(question[1]);
                 radioButtonPanelRedraw(answerList);
                 btnStart.setEnabled(false);
-                btnSubmit.setText(questionIterator.hasNext() ? "Next" : "Finish");
                 btnSubmit.setEnabled(false);
                 btnCancel.setEnabled(true);
+                btnSubmit.setText(questionIterator.hasNext() ? "Next" : "Finish");
                 lblStatus.setText("Interview in progress... Testing ["+question[0]+"]");
             }else{
                 JOptionPane.showMessageDialog(this, "Program can't continue!! No question to ask");
@@ -296,6 +312,8 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             jProgressBar1.setValue(jProgressBar1.getMaximum());
             jProgressBar1.setIndeterminate(false);
             btnSubmit.setEnabled(false);
+            result = clipController.GetResult();
+            showResult();
         }
         
     }//GEN-LAST:event_btnSubmitMouseClicked
@@ -348,6 +366,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblResult;
     private javax.swing.JLabel lblStatus;
     private javax.swing.JPanel panelAnswerArea;
     private javax.swing.JTextField txtCandidateName;
@@ -379,14 +398,28 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         return list;
     }
     
+    public ArrayList<String> getCEOInterviewQus() throws JessException{
+        if(clipController==null)return null;
+        Deffacts ctoQuestions = clipController.engine.findDeffacts("personality-question");
+        ArrayList<String> list = new ArrayList<String>();
+        for(int i=0;i < ctoQuestions.getNFacts();i++){
+            Fact f = ctoQuestions.getFact(i);
+            Value v = f.getSlotValue("text");
+            Value vIdent = f.getSlotValue("ident");
+            list.add(vIdent.stringValue(clipController.engine.getGlobalContext())+"#"+v.stringValue(clipController.engine.getGlobalContext()));
+        }
+        return list;
+    }
+    
     //add result panel items
     private void radioButtonPanelRedraw(ArrayList radBtns){
        //reset the button group
+       panelAnswerArea.removeAll();
        btnGrpRadio.clearSelection();
        for (Enumeration<AbstractButton> btns = btnGrpRadio.getElements(); btns.hasMoreElements();) {
             btnGrpRadio.remove(btns.nextElement());
        }
-       panelAnswerArea.removeAll();
+       
        JPanel panelRadio = new JPanel();
        
        //add action listener
@@ -432,5 +465,16 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
              btnGrpRadio.remove(btns.nextElement());
         }
         return selectedVal;
+   }
+   
+   private void showResult(){
+       btnGrpRadio.clearSelection();
+       for (Enumeration<AbstractButton> btns = btnGrpRadio.getElements(); btns.hasMoreElements();) {
+            btnGrpRadio.remove(btns.nextElement());
+       }
+       panelAnswerArea.removeAll();
+       lblResult.setText(result);
+       panelAnswerArea.add(lblResult);
+       panelAnswerArea.revalidate();
    }
 }
