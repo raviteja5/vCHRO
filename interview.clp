@@ -23,63 +23,60 @@
 ;;question to test technology dimenstion of the candidate
 (deffacts technocalquestion
 	(question
-		(ident resumecontent)
-		(text "On a scale of 0~5 how do you rate the candidate's resume (0-5)?")
+		(ident resumecontent);;scale the candidate's resume
+		(text "On a scale of 0~5 how do you rate the candidate's resume content (0-5)?")
 	)
 	(question
-		(ident workingvisa)
+		(ident workingvisa);;true or false question if the candidate need the working VISA
 		(text "Enter 0 or 1 if the candidate need working VISA (0 means no, 1 means yes):")
 	)
 	(question
-		(ident schoolrating)
+		(ident schoolrating);;scale the candidate's resume
 		(text "On a scale of 0~5 how do you rate the candidate's school rating (0-5)?")
 	)
 	(question
-		(ident relatedworkexperience)
+		(ident relatedworkexperience);;scale the candidate's experience (this score will be used to multiply with the score from candidate's previous company rating)
 		(text "On a scale of 0~7 how do you rate the candidate's related work experience, 
 note that any score greater and equal to 5 means the candidate has plenty of related work experiences (0-7)?")
 	)
 	(question
-		(ident compensation)
+		(ident compensation);;true or false question if the candidate satisfy the salary
 		(text "Enter 0 or 1 if the candidate accept the compensation range you offer (0 means no, 1 means yes):")
 	)
 	(question
-		(ident codingconvention)
+		(ident codingconvention);;scale the candidate's coding assessment
 		(text "On a scale of 0~5 how do you rate the candidate's coding convention (0-5)?")
 	)
 	(question
-		(ident codingtalent)
-		(text "On a scale of -5~5 how do you rate  the candidate has less, equal or greater coding talent than Arush? ")
+		(ident codingtalent);;compare the candidate's coding with Arash's 
+		(text "On a scale of -5 to 5 how do you rate  the candidate has less, equal or greater coding talent than Arash (-5-5)?")
 	)
 	(question
-		(ident previouscompanyrating)
-		(text "On a scale of 0~5 how do you rate the candidate's previous company rating (0-5)?")
+		(ident previouscompanyrating);;scale the candidate's previous company's rating (this score will be used to multiply with the score from related working experience)
+		(text "On a scale of 0~5 how do you rate the candidate's previous company (0-5)?")
 	)
 	(question
-		(ident codingsolution)
+		(ident codingsolution);;scale the candidate's coding solution (this score will be used to multiply with the score from the coding explanation)
 		(text "On a scale of 0~7 how do you rate the candidate's coding solution, 
 note that any score equal to 5 means the candidate has creative coding solution (0-7)?")
 	)
 	(question
-		(ident explanation)
+		(ident explanation);;scale the candidate's explanation for the coding (this score will be used to multiply with the score from the coding solution)
 		(text "On a scale of 0~5 how do you rate the candidate's explanation for the coding solution (0-5)?")
 	)
-		(question
-		(ident compensation)
-		(text "Enter 0 or 1 if the candidate accept the compensation range you offer (0 means no, 1 means yes):")
-	)
-			(question
-		(ident resumerequirement)
+	(question
+		(ident resumerequirement);;true or false question if the candidate's resume match the required skill set
 		(text "Enter 0 or 1 if the candidate's resume meet the requirement (0 means no, 1 means yes):")
 	)
-		(question
-		(ident jobexperience)
+	(question
+		(ident jobexperience);;true or false question if the candidate has any job experience
 		(text "Enter 0 or 1 if the candidate has job experience (0 means no, 1 means yes):")
 	)
 		(question
-		(ident questionsquality)
+		(ident questionsquality);;scale the candidate's question at the end of the interview
 		(text "On a scale of 0~5 how do you rate the candidate's questions (0-5)?")
 	)
+	;;question id (question order is from the bottom to the top)
 	(CTOask questionsquality)
 	(CTOask compensation)
 	(CTOask codingtalent)
@@ -94,8 +91,6 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(CTOask jobexperience)
 	(CTOask resumerequirement)
 )
-
-
 
 
 ;;********* Arash Rules *****************
@@ -126,17 +121,17 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(printout t "Candidate disqualified because of asking more then you would like to pay" crlf)
 	(halt)
 )
-;;elimination heuristic - Coding Performance
+;;elimination heuristic - coding performance
 (defrule disqualifiedDueTocodingPerformance
 	(answer (ident codingsolution) (text ?coso))
 	(answer (ident explanation) (text ?expl))
-	(test (< (* ?coso ?expl) 7))
+	(test (< (* ?coso ?expl) 12));;the multiplication of codingsolution and explanation should be greater and equal to 12
 	=>
 	(assert (disqualified))
 	(printout t "Candidate disqualified because of poor coding performance" crlf)
 	(halt)
 )
-;;elimination heuristic - Know the work
+;;elimination heuristic - must know how to work
 (defrule disqualifiedDueToJobExperience
 	(answer (ident jobexperience) (text ?jexp))
 	(test (< ?jexp 1))
@@ -161,7 +156,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(assert (exceptional))
 	(printout t "exceptional candidate due to creative coding skill" crlf)
 )
-;;to be a good candidate >=56 (80%) score
+;;to be a good candidate >=63 (90%) score (the full point is 70 and there are another 25 extra points)
 (defrule goodByCTO
 	(answer (ident resumecontent) (text ?resu))
 	(answer (ident schoolrating) (text ?scho))
@@ -172,13 +167,13 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident explanation) (text ?expl))
 	(answer (ident codingtalent) (text ?codtl))
 	(answer (ident questionsquality) (text ?quequa))
-	(test (>= (+ (* ?coso ?expl) (* ?pcr ?rwke) ?resu ?scho ?cdct ?codtl ?quequa) 56)) ;;if sum >= 56
+	(test (>= (+ (* ?coso ?expl) (* ?pcr ?rwke) ?resu ?scho ?cdct ?codtl ?quequa) 63)) ;;if sum >= 63
 	=>
 	(assert (goodByCTO))
 	(assert (canAskCEO))
 	(printout t "This interviewee is a potential candidate, moving on to the next interview with the CEO!!" crlf)
 )
-;;any score <56 (80%) is considered as poor candidate
+;;any score <63 (90%) is considered as poor candidate
 (defrule poorByCTO
 	(answer (ident resumecontent) (text ?resu))
 	(answer (ident schoolrating) (text ?scho))
@@ -189,41 +184,39 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident explanation) (text ?expl))
 	(answer (ident codingtalent) (text ?codtl))
 	(answer (ident questionsquality) (text ?quequa))
-	(test (< (+ (* ?coso ?expl) (* ?pcr ?rwke) ?resu ?scho ?cdct ?codtl ?quequa) 56)) ;;if sum < 56
+	(test (< (+ (* ?coso ?expl) (* ?pcr ?rwke) ?resu ?scho ?cdct ?codtl ?quequa) 63)) ;;if sum < 63
 	=>
 	(assert (disqualified))	
-	(printout t "The CTO disqualified the candidate in round 1" crlf)
+	(printout t "The CTO disqualified the candidate in round 1 due to the low score" crlf)
 	(halt)
 )
-
-
 
 ;;************Armir facts*************
 ;;question to test personality dimenstion of the candidate
 (deffacts personality-question
 	(question
 		(ident trustworthyness)
-		(text "On a scale of 0~5 how do you rate your trustworthyness (0-5)?")
+		(text "On a scale of 0~5 how do you rate the candidate's trustworthyness (0-5)?")
 	)
 	(question
 		(ident neuroticism)
-		(text "On a scale of 0~5 how do you rate your neuroticism (0-5)?")
+		(text "On a scale of 0~5 how do you rate the candidate's neuroticism (0-5)?")
 	)
 	(question
 		(ident conscientiousness)
-		(text "On a scale of 0~5 how do you rate your conscientiousness (0-5)?")
+		(text "On a scale of 0~5 how do you rate the candidate's conscientiousness (0-5)?")
 	)
 	(question
 		(ident extrovertedness)
-		(text "On a scale of 0~5 how do you rate your extrovertedness (0-5)?")
+		(text "On a scale of 0~5 how do you rate the candidate's extrovertedness (0-5)?")
 	)
 	(question
 		(ident agreeableness)
-		(text "On a scale of 0~5 how do you rate your agreeableness (0-5)?")
+		(text "On a scale of 0~5 how do you rate the candidate's agreeableness (0-5)?")
 	)
 	(question
 		(ident coachability)
-		(text "On a scale of 0~5 how do you rate your coachability (0-5)?")
+		(text "On a scale of 0~5 how do you rate the candidate's coachability (0-5)?")
 	)
 	(CEOask trustworthyness)
 	(CEOask neuroticism)
@@ -238,7 +231,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 (defrule disqualified
 	(answer (ident trustworthyness) (text ?trust))
 	
-	(test (< ?trust 4))
+	(test (< ?trust 5))
 	=>
 	(assert (disqualified))
 	(printout t "candidate disqualified because of low trusworthyness" crlf)
@@ -254,9 +247,9 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident coachability) (text 5))
 	=>
 	(assert (exceptional))
-	(printout t "exceptional candidate" crlf)
+	(printout t "exceptional candidate, HIRE HIM/HER!!" crlf)
 )
-;;to be a good candidate >=25 score
+;;any score >=75 is considered as good candidate (each score will be multiply by weight which rated from 0 to 5)
 (defrule goodByCEO
 	(answer (ident trustworthyness) (text ?trust))
 	(answer (ident neuroticism) (text ?neuro))
@@ -265,12 +258,12 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
 	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 25)) ;;if sum >= 25
+	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 75)) ;;if sum >= 75
 	=>
 	(assert (goodByCEO))
 	(printout t "good candidate" crlf)
 )
-;;any score <25 is considered as poor candidate
+;;any score <75 is considered as poor candidate (each score will be multiply by weight which rated from 0 to 5)
 (defrule poorByCEO
 	(answer (ident trustworthyness) (text ?trust))
 	(answer (ident neuroticism) (text ?neuro))
@@ -279,7 +272,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident coachability) (text ?coac))
 	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (< (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 25)) ;;if sum < 25
+	(test (< (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 75)) ;;if sum < 75
 	=>
 	(assert (poorByCEO))
 	(printout t "poor candidate" crlf)
