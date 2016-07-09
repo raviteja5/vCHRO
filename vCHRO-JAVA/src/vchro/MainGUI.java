@@ -8,7 +8,6 @@ package vchro;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -250,6 +249,13 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         try {
             clipController.engine.eval(assertAnswer);
             System.out.println(assertAnswer);
+            
+            
+            ArrayList<Object> facts = clipController.GetAllFacts();
+            for(int i= 0 ;i< facts.size();i++){
+                String name = facts.get(i).toString();
+                System.out.println(name);
+            }
         } catch (JessException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -356,7 +362,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
 
     @Override
     public void clipFileError(String msg) {
-        Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Clip File Error - "+msg);
+        Logger.getLogger(MainGUI.class.getName()).log(Level.INFO, "Clip File Error - {0}", msg);
         lblStatus.setText("Error in agent file loading!!");
     }
     

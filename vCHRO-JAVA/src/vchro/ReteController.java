@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -121,5 +122,27 @@ public class ReteController {
     
     public int getRatingScaleStep(String ident){
         return Integer.parseInt(this.mapScale.get(ident).split(",")[2]);
+    }
+    
+    public ArrayList<Object> GetAllFacts() {
+        Iterator list = engine.listFacts();
+        ArrayList<Object> facts = new ArrayList<Object>();
+        while (list.hasNext()) {
+            facts.add(list.next());
+        }
+        return facts;
+    }
+    
+    public String GetResult() {
+        ArrayList<Object> facts = GetAllFacts();
+        String advice = "";
+        for(int i= 0 ;i< facts.size();i++){
+            String name = facts.get(i).toString();
+            if(name.contains("advice")){
+                String[] result = name.split("result");
+                advice += " " + result[(int)(result.length-1)].replace(")", "");
+            }
+        }
+        return advice;
     }
 }
