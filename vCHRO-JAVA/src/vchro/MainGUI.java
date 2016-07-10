@@ -8,6 +8,11 @@ package vchro;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -34,12 +39,26 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     Iterator<String> questionIterator;
     String result;
     String explanation;
+    SupervisorFeedback formFeedback;
     /**
      * Creates new form MainGUI
      */
-    public MainGUI() {
+    public MainGUI() throws FileNotFoundException, IOException {
         initComponents();
         clipFile = "vchro/interview.clp";
+        //if idealEmployeeConcept.clp dont exist create the file with these default values
+        //(assert (idealEmployee (trust 4.0) (neuro 3.5) (consci 3.0) (extro 2.5) (agree 2.0) (coach 4.0)))
+        String data = "(assert (idealEmployee (trust 4.0) (neuro 3.5) (consci 3.0) (extro 2.5) (agree 2.0) (coach 4.0)))";
+    	File file =new File("idealEmployeeConcept.clp");
+        //if file doesnt exists, then create it
+        if(!file.exists()){
+                file.createNewFile();
+        }
+        FileWriter fileWritter = new FileWriter(file.getName(),false);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+        bufferWritter.write(data);
+        bufferWritter.close();
+        
         clipController = new ReteController();
         clipController.addListener(this);
         clipController.loadClipFile(clipFile);
@@ -154,7 +173,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             }
         });
 
-        cmbInterviewType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Select--", "Technical Job", "Sales Job", "Marketing Job" }));
+        cmbInterviewType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Select--", "Technical Job", "Sales Job", "Marketing Job", "Feedback" }));
         cmbInterviewType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbInterviewTypeActionPerformed(evt);
@@ -230,10 +249,29 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
         if(btnStart.isEnabled() && cmbInterviewType.getSelectedIndex() > 0 /*is slected sth valid*/){
             try {
-                if(cmbInterviewType.getSelectedIndex() == 1/*Technical Job Starts with CTO interview*/){
-                    questionList.addAll(getCTOInterviewQus());
-                }else if(cmbInterviewType.getSelectedIndex() > 1/*Other Job Only require CEO Interview*/){
-                    questionList.addAll(getCEOInterviewQus());
+                switch (cmbInterviewType.getSelectedIndex()) {
+                    case 1/*Technical Job Starts with CTO interview*/:
+                        questionList.addAll(getCTOInterviewQus());
+                        break;
+                    case 2:
+                        questionList.addAll(getCEOInterviewQus());
+                        break;
+                    case 3/*Other Job Only require CEO Interview*/:
+                        questionList.addAll(getCEOInterviewQus());
+                        break;
+                    case 4:
+                    {
+                        try {
+                            formFeedback = new SupervisorFeedback(txtCandidateName.getText(), this);
+                            formFeedback.setVisible(true);
+                            this.setEnabled(false);
+                            return;
+                        } catch (Exception ex) {
+                            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    default:
+                        break;
                 }
                 questionIterator = questionList.iterator();
                 if(questionIterator.hasNext()){
@@ -275,26 +313,23 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
         if(btnCancel.isEnabled()){
             if(JOptionPane.showConfirmDialog(this, "All data will lost, do you want to reset?") == 0){
-                try {
-                    clipController.engine.reset();
-                    lblStatus.setText("Interview Abandoned!");
-                    jProgressBar1.setValue(jProgressBar1.getMinimum());
-                    jProgressBar1.setIndeterminate(false);
-                    btnSubmit.setEnabled(false);
-                    cmbInterviewType.setSelectedIndex(0);
-                    txtCandidateName.setText("");
-                    result = "Interview Reset";
-                    txtQuestion.setText("");
-                    ArrayList<Object> facts = clipController.GetAllFacts();
-                    for(int i= 0 ;i< facts.size();i++){
-                        System.out.println(facts.get(i).toString());
-                    }
-                    showResult();
-                    
-                } catch (JessException ex) {
-                    Logger.getLogger(ReteController.class.getName()).log(Level.SEVERE, null, ex);
-                    JOptionPane.showConfirmDialog(this, "Failed to reset! "+ex.getMessage());
+                clipController = new ReteController();
+                clipController.addListener(this);
+                clipController.loadClipFile(clipFile);
+
+                lblStatus.setText("Interview Abandoned!");
+                jProgressBar1.setValue(jProgressBar1.getMinimum());
+                jProgressBar1.setIndeterminate(false);
+                btnSubmit.setEnabled(false);
+                cmbInterviewType.setSelectedIndex(0);
+                txtCandidateName.setText("");
+                result = "Interview Reset";
+                txtQuestion.setText("");
+                ArrayList<Object> facts = clipController.GetAllFacts();
+                for(int i= 0 ;i< facts.size();i++){
+                    System.out.println(facts.get(i).toString());
                 }
+                showResult();
             }
         }
     }//GEN-LAST:event_btnCancelMouseClicked
@@ -435,9 +470,15 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                MainGUI program = new MainGUI();
-                program.pack();
+                MainGUI program;
+                try {
+                    program = new MainGUI();
+                    program.pack();
                 program.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
             }
         });
     }
@@ -566,5 +607,40 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
        lblResult.setText(result);
        panelAnswerArea.add(lblResult);
        panelAnswerArea.revalidate();
+   }
+   
+   public void feedbackComplete(String newIdealEmployee) throws IOException, JessException{
+        this.setEnabled(true);
+        formFeedback.dispose();
+        JOptionPane.showMessageDialog(this, newIdealEmployee);
+        File file =new File("idealEmployeeConcept.clp");
+        //if file doesnt exists, then create it
+        if(!file.exists()){
+            JOptionPane.showMessageDialog(this, "idealEmployeeConcept.clp file not found!!");
+            return;
+        }
+        FileWriter fileWritter = new FileWriter(file.getName(),false);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+        bufferWritter.write(newIdealEmployee);
+        bufferWritter.close();
+        clipController.engine.clear();
+        //reset the engine
+        clipController = new ReteController();
+        clipController.addListener(this);
+        clipController.loadClipFile(clipFile);
+
+        lblStatus.setText("New things learned!");
+        jProgressBar1.setValue(jProgressBar1.getMinimum());
+        jProgressBar1.setIndeterminate(false);
+        btnSubmit.setEnabled(false);
+        cmbInterviewType.setSelectedIndex(0);
+        txtCandidateName.setText("");
+        result = "Interview Reset";
+        txtQuestion.setText("");
+        ArrayList<Object> facts = clipController.GetAllFacts();
+        for(int i= 0 ;i< facts.size();i++){
+            System.out.println(facts.get(i).toString());
+        }
+        showResult();
    }
 }

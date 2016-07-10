@@ -20,8 +20,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jess.Deffacts;
+import jess.Deftemplate;
+import jess.Fact;
 import jess.JessException;
+import jess.RU;
 import jess.Rete;
+import jess.Value;
 
 
 public class ReteController {
@@ -31,6 +35,7 @@ public class ReteController {
     public static final int INT_MODE_CTO = 1;
     public static final int INT_MODE_CEO = 2;
     public int interviewMode;
+    private String idealEmpConceptFile;
     
     public ReteController(){
         Logger.getLogger(ReteController.class.getName()).log(Level.INFO, "Creating Object");
@@ -61,6 +66,7 @@ public class ReteController {
         mapScale.put("coachability", "0,5,1");
         
         interviewMode = INT_MODE_CTO;
+        idealEmpConceptFile = "idealEmployeeConcept.clp";
     }
     
     public void addListener(ReteControllerEventListener listener){
@@ -114,8 +120,19 @@ public class ReteController {
         try{
             engine.clear();
             if(engine.batch(clipScriptFilePath).toString().equalsIgnoreCase("TRUE")){
-                new Deffacts("IdealEmployeeFact", "(idealEmployee (trust 4.0) (neuro 3.5) (consci 3.0) (extro 2.5) (agree 2.0) (coach 4.0))",engine);
                 engine.reset();
+//                Fact factIdealEmp = new Fact(engine.findDeftemplate("idealEmployee"));
+//                factIdealEmp.setSlotValue("trust", new Value(4.0, RU.FLOAT));
+//                factIdealEmp.setSlotValue("neuro", new Value(3.5, RU.FLOAT));
+//                factIdealEmp.setSlotValue("consci", new Value(3.0, RU.FLOAT));
+//                factIdealEmp.setSlotValue("extro", new Value(2.5, RU.FLOAT));
+//                factIdealEmp.setSlotValue("agree", new Value(2.0, RU.FLOAT));
+//                factIdealEmp.setSlotValue("coach", new Value(4.0, RU.FLOAT));
+                engine.batch(idealEmpConceptFile);
+                ArrayList<Object> facts = GetAllFacts();
+                for(int i= 0 ;i< facts.size();i++){
+                    System.out.println(facts.get(i).toString());
+                }
                 for(ReteControllerEventListener l : listeners){
                         l.clipFileLoaded();
                 }
@@ -124,7 +141,7 @@ public class ReteController {
         }catch(JessException ex){
            for(ReteControllerEventListener l : listeners){
                 l.clipFileError("Engine failed to load/execute the file! Error: "+ex.getMessage());
-            } 
+            }
         }
         //engine.eval(command);
         
