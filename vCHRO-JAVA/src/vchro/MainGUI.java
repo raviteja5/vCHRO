@@ -8,6 +8,11 @@ package vchro;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -34,12 +39,26 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     Iterator<String> questionIterator;
     String result;
     String explanation;
+    SupervisorFeedback formFeedback;
     /**
      * Creates new form MainGUI
      */
-    public MainGUI() {
+    public MainGUI() throws FileNotFoundException, IOException {
         initComponents();
         clipFile = "vchro/interview.clp";
+        //if idealEmployeeConcept.clp dont exist create the file with these default values
+        //(assert (idealEmployee (trust 4.0) (neuro 3.5) (consci 3.0) (extro 2.5) (agree 2.0) (coach 4.0)))
+        String data = "(assert (idealEmployee (trust 4.0) (neuro 3.5) (consci 3.0) (extro 2.5) (agree 2.0) (coach 4.0)))";
+    	File file =new File("idealEmployeeConcept.clp");
+        //if file doesnt exists, then create it
+        if(!file.exists()){
+                file.createNewFile();
+        }
+        FileWriter fileWritter = new FileWriter(file.getName(),false);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+        bufferWritter.write(data);
+        bufferWritter.close();
+        
         clipController = new ReteController();
         clipController.addListener(this);
         clipController.loadClipFile(clipFile);
@@ -68,6 +87,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         lblResult = new javax.swing.JLabel();
         btnCancel = new javax.swing.JButton();
         lblStatus = new javax.swing.JLabel();
+        cmbInterviewType = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -75,10 +95,29 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         jLabel1.setForeground(new java.awt.Color(255, 153, 0));
         jLabel1.setText("Welcome to the office of Chief Human Resource Officer");
 
-        txtCandidateName.setText("Please enter your name and press Start");
+        txtCandidateName.setText("Enter Name, interview then Start");
         txtCandidateName.setName("txtCandidateName"); // NOI18N
+        txtCandidateName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCandidateNameActionPerformed(evt);
+            }
+        });
+        txtCandidateName.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtCandidateNameFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtCandidateNameFocusLost(evt);
+            }
+        });
+        txtCandidateName.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtCandidateNameKeyTyped(evt);
+            }
+        });
 
         btnStart.setText("Start");
+        btnStart.setEnabled(false);
         btnStart.setName("btnStart"); // NOI18N
         btnStart.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -96,6 +135,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         jScrollPane1.setViewportView(txtQuestion);
 
         btnSubmit.setText("Submit");
+        btnSubmit.setEnabled(false);
         btnSubmit.setName("btnSubmit"); // NOI18N
         btnSubmit.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -106,15 +146,16 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         lblResult.setFont(new java.awt.Font("American Typewriter", 1, 24)); // NOI18N
         lblResult.setForeground(new java.awt.Color(255, 51, 0));
         lblResult.setText("Answer Area");
+        lblResult.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout panelAnswerAreaLayout = new javax.swing.GroupLayout(panelAnswerArea);
         panelAnswerArea.setLayout(panelAnswerAreaLayout);
         panelAnswerAreaLayout.setHorizontalGroup(
             panelAnswerAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelAnswerAreaLayout.createSequentialGroup()
-                .addGap(159, 159, 159)
-                .addComponent(lblResult)
-                .addContainerGap(169, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelAnswerAreaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblResult, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelAnswerAreaLayout.setVerticalGroup(
             panelAnswerAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,11 +165,18 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 .addContainerGap(56, Short.MAX_VALUE))
         );
 
-        btnCancel.setText("Cancel");
+        btnCancel.setText("Reset");
         btnCancel.setName("btnCancel"); // NOI18N
         btnCancel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btnCancelMouseClicked(evt);
+            }
+        });
+
+        cmbInterviewType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Select--", "Technical Job", "Sales Job", "Marketing Job", "Feedback" }));
+        cmbInterviewType.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbInterviewTypeActionPerformed(evt);
             }
         });
 
@@ -139,29 +187,32 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 561, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(14, 14, 14)
-                                .addComponent(jLabel1))))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(42, 42, 42)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(cmbInterviewType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, 296, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 73, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnCancel)
                                 .addGap(18, 18, 18)
-                                .addComponent(btnStart))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(btnSubmit))
+                            .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1)
+                            .addComponent(panelAnswerArea, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(46, 46, 46))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnStart)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 561, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addComponent(btnCancel)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(btnSubmit))
-                                .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(panelAnswerArea, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(lblStatus, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGap(46, 46, 46)))
+                                    .addGap(14, 14, 14)
+                                    .addComponent(jLabel1))))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -173,8 +224,9 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnStart))
+                    .addComponent(btnStart)
+                    .addComponent(cmbInterviewType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtCandidateName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(27, 27, 27)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -195,9 +247,32 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
-        if(btnStart.isEnabled()){
+        if(btnStart.isEnabled() && cmbInterviewType.getSelectedIndex() > 0 /*is slected sth valid*/){
             try {
-                questionList.addAll(getCTOInterviewQus());
+                switch (cmbInterviewType.getSelectedIndex()) {
+                    case 1/*Technical Job Starts with CTO interview*/:
+                        questionList.addAll(getCTOInterviewQus());
+                        break;
+                    case 2:
+                        questionList.addAll(getCEOInterviewQus());
+                        break;
+                    case 3/*Other Job Only require CEO Interview*/:
+                        questionList.addAll(getCEOInterviewQus());
+                        break;
+                    case 4:
+                    {
+                        try {
+                            formFeedback = new SupervisorFeedback(txtCandidateName.getText(), this);
+                            formFeedback.setVisible(true);
+                            this.setEnabled(false);
+                            return;
+                        } catch (Exception ex) {
+                            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    default:
+                        break;
+                }
                 questionIterator = questionList.iterator();
                 if(questionIterator.hasNext()){
                     String[] question = questionIterator.next().split("#");
@@ -217,7 +292,8 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                     btnSubmit.setText(questionIterator.hasNext() ? "Next" : "Finish");
                     btnSubmit.setEnabled(false);
                     btnCancel.setEnabled(true);
-                    lblStatus.setText("Interview in progress... Testing ["+question[0]+"]");
+                    String interViewType = clipController.getCurrentInterviewMode() == 1 ? "CTO" : "CEO";
+                    lblStatus.setText(interViewType + " Interview in progress... Testing ["+question[0]+"]");
                 }else{
                     JOptionPane.showMessageDialog(this, "Program can't continue!! No question to ask");
                     btnStart.setEnabled(true);
@@ -236,8 +312,24 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
 
     private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
         if(btnCancel.isEnabled()){
-            if(JOptionPane.showConfirmDialog(this, "All settings will lost, do you want to exit?") == 0){
-                System.exit(0);
+            if(JOptionPane.showConfirmDialog(this, "All data will lost, do you want to reset?") == 0){
+                clipController = new ReteController();
+                clipController.addListener(this);
+                clipController.loadClipFile(clipFile);
+
+                lblStatus.setText("Interview Abandoned!");
+                jProgressBar1.setValue(jProgressBar1.getMinimum());
+                jProgressBar1.setIndeterminate(false);
+                btnSubmit.setEnabled(false);
+                cmbInterviewType.setSelectedIndex(0);
+                txtCandidateName.setText("");
+                result = "Interview Reset";
+                txtQuestion.setText("");
+                ArrayList<Object> facts = clipController.GetAllFacts();
+                for(int i= 0 ;i< facts.size();i++){
+                    System.out.println(facts.get(i).toString());
+                }
+                showResult();
             }
         }
     }//GEN-LAST:event_btnCancelMouseClicked
@@ -292,7 +384,8 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
                 btnSubmit.setEnabled(false);
                 btnCancel.setEnabled(true);
                 btnSubmit.setText(questionIterator.hasNext() ? "Next" : "Finish");
-                lblStatus.setText("Interview in progress... Testing ["+question[0]+"]");
+                String interViewType = clipController.getCurrentInterviewMode() == 1 ? "CTO" : "CEO";
+                lblStatus.setText(interViewType + " Interview in progress... Testing ["+question[0]+"]");
             }else{
                 JOptionPane.showMessageDialog(this, "Program can't continue!! No question to ask");
                 btnStart.setEnabled(true);
@@ -307,10 +400,43 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             jProgressBar1.setIndeterminate(false);
             btnSubmit.setEnabled(false);
             result = clipController.GetResult();
+            ArrayList<Object> facts = clipController.GetAllFacts();
+            for(int i= 0 ;i< facts.size();i++){
+                System.out.println(facts.get(i).toString());
+            }
+            if(result == null || result.equals("")){
+                result = "No Result - Check log!";
+            }
             showResult();
         }
         
     }//GEN-LAST:event_btnSubmitMouseClicked
+
+    private void cmbInterviewTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbInterviewTypeActionPerformed
+        // TODO add your handling code here:
+        boolean enabled = cmbInterviewType.getSelectedIndex() > 0 && txtCandidateName.getText().length() > 0 && !txtCandidateName.getText().trim().equals("Enter Name, interview then Start");
+        btnStart.setEnabled(enabled);
+    }//GEN-LAST:event_cmbInterviewTypeActionPerformed
+
+    private void txtCandidateNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtCandidateNameFocusGained
+        if(txtCandidateName.getText().trim().equals("Enter Name, interview then Start"))
+           txtCandidateName.setText("");
+    }//GEN-LAST:event_txtCandidateNameFocusGained
+
+    private void txtCandidateNameFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtCandidateNameFocusLost
+        if(txtCandidateName.getText().trim().equals(""))
+           txtCandidateName.setText("Enter Name, interview then Start");
+    }//GEN-LAST:event_txtCandidateNameFocusLost
+
+    private void txtCandidateNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCandidateNameActionPerformed
+        boolean enabled = cmbInterviewType.getSelectedIndex() > 0 && txtCandidateName.getText().length() > 0 && !txtCandidateName.getText().trim().equals("Enter Name, interview then Start");
+        btnStart.setEnabled(enabled);
+    }//GEN-LAST:event_txtCandidateNameActionPerformed
+
+    private void txtCandidateNameKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCandidateNameKeyTyped
+        boolean enabled = cmbInterviewType.getSelectedIndex() > 0 && txtCandidateName.getText().length() > 0 && !txtCandidateName.getText().trim().equals("Enter Name, interview then Start");
+        btnStart.setEnabled(enabled);
+    }//GEN-LAST:event_txtCandidateNameKeyTyped
     
     
     
@@ -344,9 +470,15 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                MainGUI program = new MainGUI();
-                program.pack();
+                MainGUI program;
+                try {
+                    program = new MainGUI();
+                    program.pack();
                 program.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
             }
         });
     }
@@ -356,6 +488,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
     private javax.swing.ButtonGroup btnGrpRadio;
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnSubmit;
+    private javax.swing.JComboBox<String> cmbInterviewType;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -391,6 +524,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             Value vIdent = f.getSlotValue("ident");
             list.add(vIdent.stringValue(clipController.engine.getGlobalContext())+"#"+v.stringValue(clipController.engine.getGlobalContext()));
         }
+        clipController.setCurrentInterviewMode(ReteController.INT_MODE_CTO);
         return list;
     }
     
@@ -404,6 +538,7 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
             Value vIdent = f.getSlotValue("ident");
             list.add(vIdent.stringValue(clipController.engine.getGlobalContext())+"#"+v.stringValue(clipController.engine.getGlobalContext()));
         }
+        clipController.setCurrentInterviewMode(ReteController.INT_MODE_CEO);
         return list;
     }
     
@@ -472,5 +607,40 @@ public class MainGUI extends javax.swing.JFrame implements ReteControllerEventLi
        lblResult.setText(result);
        panelAnswerArea.add(lblResult);
        panelAnswerArea.revalidate();
+   }
+   
+   public void feedbackComplete(String newIdealEmployee) throws IOException, JessException{
+        this.setEnabled(true);
+        formFeedback.dispose();
+        JOptionPane.showMessageDialog(this, newIdealEmployee);
+        File file =new File("idealEmployeeConcept.clp");
+        //if file doesnt exists, then create it
+        if(!file.exists()){
+            JOptionPane.showMessageDialog(this, "idealEmployeeConcept.clp file not found!!");
+            return;
+        }
+        FileWriter fileWritter = new FileWriter(file.getName(),false);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+        bufferWritter.write(newIdealEmployee);
+        bufferWritter.close();
+        clipController.engine.clear();
+        //reset the engine
+        clipController = new ReteController();
+        clipController.addListener(this);
+        clipController.loadClipFile(clipFile);
+
+        lblStatus.setText("New things learned!");
+        jProgressBar1.setValue(jProgressBar1.getMinimum());
+        jProgressBar1.setIndeterminate(false);
+        btnSubmit.setEnabled(false);
+        cmbInterviewType.setSelectedIndex(0);
+        txtCandidateName.setText("");
+        result = "Interview Reset";
+        txtQuestion.setText("");
+        ArrayList<Object> facts = clipController.GetAllFacts();
+        for(int i= 0 ;i< facts.size();i++){
+            System.out.println(facts.get(i).toString());
+        }
+        showResult();
    }
 }
