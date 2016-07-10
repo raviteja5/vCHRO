@@ -22,7 +22,8 @@
 ;;********* Arash Facts ***************
 ;;question to test technology dimenstion of the candidate
 (deffacts technocalquestion
-	(question
+	
+        (question
 		(ident resumecontent);;scale the candidate's resume
 		(text "On a scale of 0~5 how do you rate the candidate's resume content (0-5)?")
 	)

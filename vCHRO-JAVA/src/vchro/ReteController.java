@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jess.Deffacts;
 import jess.JessException;
 import jess.Rete;
 
@@ -113,6 +114,7 @@ public class ReteController {
         try{
             engine.clear();
             if(engine.batch(clipScriptFilePath).toString().equalsIgnoreCase("TRUE")){
+                new Deffacts("IdealEmployeeFact", "(idealEmployee (trust 4.0) (neuro 3.5) (consci 3.0) (extro 2.5) (agree 2.0) (coach 4.0))",engine);
                 engine.reset();
                 for(ReteControllerEventListener l : listeners){
                         l.clipFileLoaded();
@@ -169,7 +171,7 @@ public class ReteController {
     
     //on an assert statment, run the engine, if any rule fires, check if disqualified return false else return true
     public boolean isDisqualified(String assertThisAnswer) throws JessException{
-        System.out.println("Asserting# "+assertThisAnswer);
+        //System.out.println("Asserting# "+assertThisAnswer);
         engine.eval(assertThisAnswer);
         if(engine.run() > 0){
             ArrayList<Object> facts = GetAllFacts();
@@ -200,4 +202,9 @@ public class ReteController {
     public int getCurrentInterviewMode(){
         return this.interviewMode;
     }
+    
+    public void setCurrentInterviewMode(int intMode){
+        this.interviewMode = intMode;
+    }
+    
 }
