@@ -1,4 +1,3 @@
-
 ;;***************templates of question and answer**************
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
@@ -77,19 +76,19 @@ note that any score equal to 5 means the candidate has creative coding solution 
 		(text "On a scale of 0~5 how do you rate the candidate's questions (0-5)?")
 	)
 	;;question id (question order is from the bottom to the top)
-	(CTOask questionsquality)
-	(CTOask compensation)
-	(CTOask codingtalent)
-	(CTOask explanation)
-	(CTOask codingsolution)
-	(CTOask codingconvention)
-	(CTOask relatedworkexperience)
-	(CTOask previouscompanyrating)
-	(CTOask schoolrating)
-	(CTOask resumecontent)
-	(CTOask workingvisa)
-	(CTOask jobexperience)
-	(CTOask resumerequirement)
+	;(CTOask questionsquality)
+	;(CTOask compensation)
+	;(CTOask codingtalent)
+	;(CTOask explanation)
+	;(CTOask codingsolution)
+	;(CTOask codingconvention)
+	;(CTOask relatedworkexperience)
+	;(CTOask previouscompanyrating)
+	;(CTOask schoolrating)
+	;(CTOask resumecontent)
+	;(CTOask workingvisa)
+	;(CTOask jobexperience)
+	;(CTOask resumerequirement)
 )
 
 
@@ -195,26 +194,6 @@ note that any score equal to 5 means the candidate has creative coding solution 
 ;;question to test personality dimenstion of the candidate
 (deffacts personality-question
 	(question
-		(ident stereotype)
-		(text "Is the candidate good or bad based on CEO's stereotype on the candidate (0=Best; 5=Worst)?")
-	)
-	(question
-		(ident candidateForSTG)
-		(text "Might the candidate help in achieving short term goal(0-No 1-Yes)?")
-	)
-	(question
-		(ident polarized)
-		(text "Is this emotion due to pre-existing mooods(0) or due to the candidate (1)?")
-	)
-	(question
-		(ident emotionLevel)
-		(text "What is the level of this emotion during the interview (0-5)?")
-	)
-	(question
-		(ident emotion)
-		(text "Which emotion is the strongest for the CEO during interview 0:Neutral 1:Anxiety 2:Joy 3:Midly Sad 4:Fear 5:Anger (0-5)?")
-	)
-	(question
 		(ident trustworthyness)
 		(text "On a scale of 0~5 how do you rate the candidate's trustworthyness (0-5)?")
 	)
@@ -238,18 +217,37 @@ note that any score equal to 5 means the candidate has creative coding solution 
 		(ident coachability)
 		(text "On a scale of 0~5 how do you rate the candidate's coachability (0-5)?")
 	)
-	
-	(CEOask emotion)
-	(CEOask emotionLevel)
-	(CEOask polarized)
-	(CEOask stereotype)	
-	(CEOask candidateForSTG)
-	(CEOask trustworthyness)
-	(CEOask neuroticism)
-	(CEOask conscientiousness)
-	(CEOask extrovertedness)
-	(CEOask agreeableness)
-	(CEOask coachability)
+	(question
+		(ident emotion)
+		(text "Which emotion is the strongest for the CEO during interview 0:Neutral 1:Anxiety 2:Joy 3:Midly Sad 4:Fear 5:Anger (0-5)?")
+	)
+        (question
+		(ident emotionLevel)
+		(text "What is the level of this emotion during the interview (0-5)?")
+	)
+        (question
+		(ident polarized)
+		(text "Is this emotion due to pre-existing mooods(0) or due to the candidate (1)?")
+	)
+        (question
+		(ident candidateForSTG)
+		(text "Might the candidate help in achieving short term goal(0-No 1-Yes)?")
+	)
+        (question
+		(ident stereotype)
+		(text "Is the candidate good or bad based on CEO's stereotype on the candidate (0=Best; 5=Worst)?")
+	)
+	;(CEOask emotion)
+	;(CEOask emotionLevel)
+	;(CEOask polarized)
+	;(CEOask stereotype)	
+	;(CEOask candidateForSTG)
+	;(CEOask trustworthyness)
+	;(CEOask neuroticism)
+	;(CEOask conscientiousness)
+	;(CEOask extrovertedness)
+	;(CEOask agreeableness)
+	;(CEOask coachability)
 )
 
 (defglobal ?*thres* = 75)
