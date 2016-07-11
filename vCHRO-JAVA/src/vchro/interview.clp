@@ -1,5 +1,4 @@
 
-
 ;;***************templates of question and answer**************
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
