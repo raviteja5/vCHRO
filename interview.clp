@@ -19,7 +19,7 @@
 	(slot coach)
 )
 
-;;********* Arash Facts ***************
+;;********* CTO Facts ***************
 ;;question to test technology dimenstion of the candidate
 (deffacts technocalquestion
 	(question
@@ -93,7 +93,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 )
 
 
-;;********* Arash Rules *****************
+;;********* CTO Rules *****************
 ;;elimination heuristic - meeting job requiremented resume
 (defrule disqualifiedDueTounqualifiedResume
 	(answer (ident resumerequirement) (text ?resurq))
@@ -191,7 +191,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(halt)
 )
 
-;;************Armir facts*************
+;;************CEO facts*************
 ;;question to test personality dimenstion of the candidate
 (deffacts personality-question
 	(question
@@ -203,12 +203,16 @@ note that any score equal to 5 means the candidate has creative coding solution 
 		(text "Might the candidate help in achieving short term goal(0-No 1-Yes)?")
 	)
 	(question
-		(ident emotion)
-		(text "Which emotion is the strongest for the CEO during interview 0:Neutral 1:Anxiety 2:Joy 3:Midly Sad 4:Fear 5:Anger (0-5)?")
+		(ident polarized)
+		(text "Is this emotion due to pre-existing mooods(0) or due to the candidate (1)?")
 	)
 	(question
 		(ident emotionLevel)
 		(text "What is the level of this emotion during the interview (0-5)?")
+	)
+	(question
+		(ident emotion)
+		(text "Which emotion is the strongest for the CEO during interview 0:Neutral 1:Anxiety 2:Joy 3:Midly Sad 4:Fear 5:Anger (0-5)?")
 	)
 	(question
 		(ident trustworthyness)
@@ -234,10 +238,12 @@ note that any score equal to 5 means the candidate has creative coding solution 
 		(ident coachability)
 		(text "On a scale of 0~5 how do you rate the candidate's coachability (0-5)?")
 	)
+	
+	(CEOask emotion)
+	(CEOask emotionLevel)
+	(CEOask polarized)
 	(CEOask stereotype)	
 	(CEOask candidateForSTG)
-	(CEOask emotionLevel)
-	(CEOask emotion)
 	(CEOask trustworthyness)
 	(CEOask neuroticism)
 	(CEOask conscientiousness)
@@ -248,98 +254,95 @@ note that any score equal to 5 means the candidate has creative coding solution 
 
 (defglobal ?*thres* = 75)
 
-;;***********Armir rules ********************
+;;***********CEO rules ********************
 ;;*******Pre-existing emotions Rules**
 ;;Set pasing score to 75 for neutral or sad moods
 (defrule neutralOrSad
 	(answer (ident emotion) (text ?emotion))
+	(answer (ident emotionLevel) (text ?emotionLevel))
+	(test (>= ?emotionLevel 3))
 	(test (or (eq ?emotion 0) (eq ?emotion 3)))
 	=>
 	(bind ?*thres* 75)
-	(assert (computedThres))
 )
 
 ;;Set passing score to 40 for anxious CEO
 (defrule anxious
 	(answer (ident emotion) (text ?emotion))
+	(answer (ident emotionLevel) (text ?emotionLevel))
+	(test (>= ?emotionLevel 3))
 	(test (eq ?emotion 1))
 	=>
 	(bind ?*thres* 40)
-	(assert (computedThres))
 	(printout t "CEO is anxious." crlf)
 )
 
-;;Set passing score to 60 for joyful CEO
+;;Decrease passing score by 10 for joyful CEO
 (defrule joyful
 	(answer (ident emotion) (text ?emotion))
+	(answer (ident emotionLevel) (text ?emotionLevel))
+	(test (>= ?emotionLevel 3))
 	(test (eq ?emotion 2))
 	=>
-	(bind ?*thres* 60)
-	(assert (checkPolarized))
+	(bind ?*thres* (- ?*thres* 10))
 	(printout t "CEO is joyful." crlf)
 )
 
-;;Set passing score to 60 for fearful CEO, given that candidate might help in achieving Short term goal
+;;Decrease passing score by 10 for fearful CEO, given that candidate might help in achieving Short term goal
 (defrule fearful
 	(answer (ident emotion) (text ?emotion))
 	(answer (ident candidateForSTG) (text ?stg))
+	(answer (ident emotionLevel) (text ?emotionLevel))
+	(test (>= ?emotionLevel 3))
 	(test (eq ?emotion 4))
 	(test (>= ?stg 1))
 	=>
-	(bind ?*thres* 60)
-	(assert (checkPolarized))
+	(bind ?*thres* (- ?*thres* 10))
 	(printout t "CEO is fearful, and the candidate might help in achieving Short Term Goal." crlf)
 )
 
-;;Set passing score to 80 for angry CEO, given that candidate has a bad impression based on CEO's stereotype
+;;Increase passing score by 10 for angry CEO, given that candidate has a bad impression based on CEO's stereotype
 (defrule angry
 	(answer (ident emotion) (text ?emotion))
 	(answer (ident stereotype) (text ?stereotype))
+	(answer (ident emotionLevel) (text ?emotionLevel))
+	(test (>= ?emotionLevel 3))
 	(test (eq ?emotion 5))
 	(test (>= ?stereotype 3))
 	=>
-	(bind ?*thres* 85)
-	(assert (checkPolarized))
+	(bind ?*thres* (+ ?*thres* 10))
 	(printout t "CEO is angry, and the candidate is not good based on his stereotype." crlf)
 )
 
-;;***** Emotions during interview Rules ***********
-;;Further decrease passing score if emotion is due to candidate (for joy and fear)
+;;***** Emotions during interview - Rules ***********
+;;Further decrease passing score by 5 if emotion is due to candidate (for joy and fear)
 (defrule polarizedDecrease
 	(checkPolarized)
-	(polarized)
+	(answer (ident polarized) (text ?polarized))
 	(answer (ident emotion) (text ?emotion))
 	(test (or (eq ?emotion 2) (eq ?emotion 3)))
+	(test (eq ?polarized 1))
 	=>
-	(bind ?*thres* 55)
-	(assert (computedThres))
+	(bind ?*thres* (- ?*thres* 5))
 )
 
-;;Further increase passing score if emotion is due to candidate (for anger)
+;;Further increase passing score by 5 if emotion is due to candidate (for anger)
 (defrule polarizedIncrease
 	(checkPolarized)
-	(polarized)
+	(answer (ident polarized) (text ?polarized))
 	(answer (ident emotion) (text ?emotion))
 	(answer (ident stereotype) (text ?stereotype))
 	(test (>= ?stereotype 3))
+	(test (eq ?emotion 5))
+	(test (eq ?polarized 1))
 	=>
-	(bind ?*thres* 90)
-	(assert (computedThres))
+	(bind ?*thres* (+ ?*thres* 5))
 )
 
-;;If emotion is due to pre-existing mood, do nothing. Proceed to decision.
-(defrule proceedToDecision
-	(checkPolarized)
-	(not(polarized))
-	=>
-	(assert (computedThres))
-)
-
-;;***Disqualify/Exceptional Rules *************
+;;*****Disqualify/Exceptional Rules *************
 ;;elimination heuristic - trusworthyness is a must
 (defrule disqualified
 	(answer (ident trustworthyness) (text ?trust))
-	
 	(test (< ?trust 5))
 	=>
 	(assert (disqualified))
@@ -371,7 +374,6 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
 	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) ?*thres*)) 
 	(test (not(eq ?emotion 1)))
-	(computedThres)
 	=>
 	(assert (goodByCEO))
 	(printout t "CEO is either emotionally neutral or midly sad." crlf)
@@ -395,16 +397,18 @@ note that any score equal to 5 means the candidate has creative coding solution 
 )
 
 ;;***************** CEO Says No **************
-(defrule badByCEOAdd
-	(not(goodByCEO))
-	=>
-	(assert (badByCEO))
-)
 (defrule badByCEORetract
 	(goodByCEO)
 	?b <- (badByCEO)
 	=>
 	(retract b)
+)
+
+(defrule badByCEOAdd
+	(not(goodByCEO))
+	=>
+	(assert (badByCEO))
+	(printout t "Do not hire candidate!" crlf)
 )
 
 ;;************Function for CEO and CTO questions *********
