@@ -246,8 +246,96 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(CEOask coachability)
 )
 
-;;***********Armir rules ********************
+(defglobal ?*thres* = 75)
 
+;;***********Armir rules ********************
+;;*******Pre-existing emotions Rules**
+;;Set pasing score to 75 for neutral or sad moods
+(defrule neutralOrSad
+	(answer (ident emotion) (text ?emotion))
+	(test (or (eq ?emotion 0) (eq ?emotion 3)))
+	=>
+	(bind ?*thres* 75)
+	(assert (computedThres))
+)
+
+;;Set passing score to 40 for anxious CEO
+(defrule anxious
+	(answer (ident emotion) (text ?emotion))
+	(test (eq ?emotion 1))
+	=>
+	(bind ?*thres* 40)
+	(assert (computedThres))
+	(printout t "CEO is anxious." crlf)
+)
+
+;;Set passing score to 60 for joyful CEO
+(defrule joyful
+	(answer (ident emotion) (text ?emotion))
+	(test (eq ?emotion 2))
+	=>
+	(bind ?*thres* 60)
+	(assert (checkPolarized))
+	(printout t "CEO is joyful." crlf)
+)
+
+;;Set passing score to 60 for fearful CEO, given that candidate might help in achieving Short term goal
+(defrule fearful
+	(answer (ident emotion) (text ?emotion))
+	(answer (ident candidateForSTG) (text ?stg))
+	(test (eq ?emotion 4))
+	(test (>= ?stg 1))
+	=>
+	(bind ?*thres* 60)
+	(assert (checkPolarized))
+	(printout t "CEO is fearful, and the candidate might help in achieving Short Term Goal." crlf)
+)
+
+;;Set passing score to 80 for angry CEO, given that candidate has a bad impression based on CEO's stereotype
+(defrule angry
+	(answer (ident emotion) (text ?emotion))
+	(answer (ident stereotype) (text ?stereotype))
+	(test (eq ?emotion 5))
+	(test (>= ?stereotype 3))
+	=>
+	(bind ?*thres* 85)
+	(assert (checkPolarized))
+	(printout t "CEO is angry, and the candidate is not good based on his stereotype." crlf)
+)
+
+;;***** Emotions during interview Rules ***********
+;;Further decrease passing score if emotion is due to candidate (for joy and fear)
+(defrule polarizedDecrease
+	(checkPolarized)
+	(polarized)
+	(answer (ident emotion) (text ?emotion))
+	(test (or (eq ?emotion 2) (eq ?emotion 3)))
+	=>
+	(bind ?*thres* 55)
+	(assert (computedThres))
+)
+
+;;Further increase passing score if emotion is due to candidate (for anger)
+(defrule polarizedIncrease
+	(checkPolarized)
+	(polarized)
+	(answer (ident emotion) (text ?emotion))
+	(answer (ident stereotype) (text ?stereotype))
+	(test (>= ?stereotype 3))
+	=>
+	(bind ?*thres* 90)
+	(assert (computedThres))
+)
+
+;;If emotion is due to pre-existing mood, do nothing. Proceed to decision.
+(defrule proceedToDecision
+	(checkPolarized)
+	(not(polarized))
+	=>
+	(assert (computedThres))
+)
+
+;;***Disqualify/Exceptional Rules *************
 ;;elimination heuristic - trusworthyness is a must
 (defrule disqualified
 	(answer (ident trustworthyness) (text ?trust))
@@ -270,9 +358,9 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(assert (exceptional))
 	(printout t "exceptional candidate, HIRE HIM/HER!!" crlf)
 )
-*************Good by CEO***************
-;;Neutral or Mildly sad CEO: any score >=75 is considered as good candidate (each score will be multiply by weight which rated from 0 to 5)
-(defrule goodByCEONeutral
+;;************* CEO says Yes ***************
+;;Rule for CEO to say Yes when he is not anxious
+(defrule goodByCEONotAnxious
 	(answer (ident trustworthyness) (text ?trust))
 	(answer (ident neuroticism) (text ?neuro))
 	(answer (ident conscientiousness) (text ?consc))
@@ -281,90 +369,32 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident coachability) (text ?coac))
 	(answer (ident emotion) (text ?emotion))
 	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 75)) ;;if sum >= 75
-	(test (or (eq ?emotion 0) (eq ?emotion 3))) 
+	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) ?*thres*)) 
+	(test (not(eq ?emotion 1)))
+	(computedThres)
 	=>
 	(assert (goodByCEO))
 	(printout t "CEO is either emotionally neutral or midly sad." crlf)
 	(printout t "Good candidate!" crlf)
 )
 
-;;Anxious CEO : Only 3 traits are considered for anxious CEO (Previous rule with anxiety)
+;;Anxious CEO : Only 3 traits are considered for anxious CEO (Same as previous rule but he is anxious)
 (defrule goodByCEOAnxious
 	(answer (ident neuroticism) (text ?neuro))
 	(answer (ident extrovertedness) (text ?extr))
 	(answer (ident agreeableness) (text ?agre))
 	(answer (ident emotion) (text ?emotion))
 	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (>= (+ (* ?n ?neuro) (* ?e ?extr) (* ?a ?agre)) 75)) ;;if sum >= 75
+	(test (>= (+ (* ?n ?neuro) (* ?e ?extr) (* ?a ?agre)) ?*thres*))
 	(test (eq ?emotion 1))
+	(computedThres)
 	=>
 	(assert (goodByCEO))
 	(printout t "CEO is anxious." crlf)
 	(printout t "Good candidate!" crlf)
 )
 
-;;Joyful CEO : Decrease passing score for Joyful CEO (Previous rule with Joyful)
-(defrule goodByCEOJoyful
-	(answer (ident trustworthyness) (text ?trust))
-	(answer (ident neuroticism) (text ?neuro))
-	(answer (ident conscientiousness) (text ?consc))
-	(answer (ident extrovertedness) (text ?extr))
-	(answer (ident agreeableness) (text ?agre))
-	(answer (ident coachability) (text ?coac))
-	(answer (ident emotion) (text ?emotion))
-	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 60)) ;;if sum >= 60
-	(test (eq ?emotion 2))
-	=>
-	(assert (goodByCEO))
-	(printout t "CEO is joyful." crlf)
-	(printout t "good candidate" crlf)
-)
-
-;;Fearful CEO : Decrease passing score for Fearful CEO if candidate can help achieve short term goal
-(defrule goodByCEOFearful
-	(answer (ident trustworthyness) (text ?trust))
-	(answer (ident neuroticism) (text ?neuro))
-	(answer (ident conscientiousness) (text ?consc))
-	(answer (ident extrovertedness) (text ?extr))
-	(answer (ident agreeableness) (text ?agre))
-	(answer (ident coachability) (text ?coac))
-	(answer (ident emotion) (text ?emotion))
-	(answer (ident candidateForSTG) (text ?stg))
-	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 60)) ;;if sum >= 60
-	(test (eq ?emotion 3))
-	(test (>= ?stg 3))
-	=>
-	(assert (goodByCEO))
-	(printout t "CEO is fearful, and the candidate might help in achieving Short Term Goal." crlf)
-	(printout t "good candidate" crlf)
-)
-
-;;Angry CEO : Increase passing score for Angry CEO if candidate is not good according to his stereotypes
-(defrule goodByCEOAngry
-	(answer (ident trustworthyness) (text ?trust))
-	(answer (ident neuroticism) (text ?neuro))
-	(answer (ident conscientiousness) (text ?consc))
-	(answer (ident extrovertedness) (text ?extr))
-	(answer (ident agreeableness) (text ?agre))
-	(answer (ident coachability) (text ?coac))
-	(answer (ident emotion) (text ?emotion))
-	(answer (ident candidateForSTG) (text ?stg))
-	(answer (ident stereotype) (text ?stereotype))
-	(idealEmployee (trust ?t) (neuro ?n) (consci ?cs) (extro ?e) (agree ?a) (coach ?c))
-	(test (>= (+ (* ?t ?trust) (* ?n ?neuro) (* ?cs ?consc) (* ?e ?extr) (* ?a ?agre) (* ?c ?coac)) 85)) ;;if sum >= 85
-	(test (eq ?emotion 3))
-	(test (>= ?stg 3))
-	(test (>= ?stereotype 3))
-	=>
-	(assert (goodByCEO))
-	(printout t "CEO is angry, and the candidate is not good based on his stereotype." crlf)
-	(printout t "good candidate" crlf)
-)
-
-*****************Bad by CEO**************
+;;***************** CEO Says No **************
 (defrule badByCEOAdd
 	(not(goodByCEO))
 	=>
