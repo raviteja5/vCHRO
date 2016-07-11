@@ -58,6 +58,11 @@ public class ReteController {
         mapScale.put("jobexperience", "0,1,1");
         mapScale.put("questionsquality", "0,5,1");
         
+        mapScale.put("stereotype", "0,5,1");
+        mapScale.put("candidateForSTG", "0,1,1");
+        mapScale.put("emotion", "0,5,1");
+        mapScale.put("emotionLevel", "0,5,1");
+        
         mapScale.put("trustworthyness", "0,5,1");
         mapScale.put("neuroticism", "0,5,1");
         mapScale.put("conscientiousness", "0,5,1");
@@ -173,7 +178,7 @@ public class ReteController {
         String advice = "";
         for(int i= 0 ;i< facts.size();i++){
             String name = facts.get(i).toString();
-            if(name.contains("poorByCEO")){
+            if(name.contains("poorByCEO") || name.contains("badByCEO")){
                 return "No";
             }else if(name.contains("goodByCEO")){
                 return "Yes/May be";
