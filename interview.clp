@@ -1,19 +1,4 @@
- Skip to content
-This repository
-Search
-Pull requests
-Issues
-Gist
- @Wilsonhocc
- Unwatch 5
-  Star 0
-  Fork 0 raviteja5/vCHRO
- Code  Issues 1  Pull requests 0  Wiki  Pulse  Graphs
-Branch: master Find file Copy pathvCHRO/interview.clp
-7d1b2e4  6 minutes ago
-@srashed3gatech srashed3gatech Update interview.clp
-3 contributors @raviteja5 @Wilsonhocc @srashed3gatech
-RawBlameHistory     467 lines (441 sloc)  15.2 KB
+
 ;;***************templates of question and answer**************
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
