@@ -1,4 +1,3 @@
-
 ;;***************templates of question and answer**************
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
@@ -303,7 +302,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (>= ?emotionLevel 3))
 	(test (eq ?emotion 2))
 	=>
-	(bind ?*thres* (- ?*thres* (* 10 suscep)))
+	(bind ?*thres* (- ?*thres* (* 10 ?*suscep*)))
 	(printout t "CEO is joyful." crlf)
 )
 
@@ -316,7 +315,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (eq ?emotion 4))
 	(test (>= ?stg 1))
 	=>
-	(bind ?*thres* (- ?*thres* (* 10 suscep)))
+	(bind ?*thres* (- ?*thres* (* 10 ?*suscep*)))
 	(printout t "CEO is fearful, and the candidate might help in achieving Short Term Goal." crlf)
 )
 
@@ -329,7 +328,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (eq ?emotion 5))
 	(test (>= ?stereotype 3))
 	=>
-	(bind ?*thres* (+ ?*thres* (* 10 suscep)))
+	(bind ?*thres* (+ ?*thres* (* 10 ?*suscep*)))
 	(printout t "CEO is angry, and the candidate is not good based on his stereotype." crlf)
 )
 
@@ -341,7 +340,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (or (eq ?emotion 2) (eq ?emotion 3)))
 	(test (eq ?polarized 1))
 	=>
-	(bind ?*thres* (- ?*thres* (* 5 suscep)))
+	(bind ?*thres* (- ?*thres* (* 5 ?*suscep*)))
 )
 
 ;;Further increase passing score by 5 if emotion is due to candidate (for anger)
@@ -353,7 +352,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (eq ?emotion 5))
 	(test (eq ?polarized 1))
 	=>
-	(bind ?*thres* (+ ?*thres* (* 5 suscep)))
+	(bind ?*thres* (+ ?*thres* (* 5 ?*suscep*)))
 )
 
 ;;Decrease passing score by 5 if the CEO feels current candidate is better then the previous candidate(s)
@@ -361,7 +360,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(answer (ident referenceDep) (text ?referenceDep))
 	(test (eq ?referenceDep 1))
 	=>
-	(bind ?*thres* (- ?*thres* (* 5 suscep)))
+	(bind ?*thres* (- ?*thres* (* 5 ?*suscep*)))
 )
 
 
