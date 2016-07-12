@@ -1,3 +1,19 @@
+ Skip to content
+This repository
+Search
+Pull requests
+Issues
+Gist
+ @Wilsonhocc
+ Unwatch 5
+  Star 0
+  Fork 0 raviteja5/vCHRO
+ Code  Issues 1  Pull requests 0  Wiki  Pulse  Graphs
+Branch: master Find file Copy pathvCHRO/interview.clp
+7d1b2e4  6 minutes ago
+@srashed3gatech srashed3gatech Update interview.clp
+3 contributors @raviteja5 @Wilsonhocc @srashed3gatech
+RawBlameHistory     467 lines (441 sloc)  15.2 KB
 ;;***************templates of question and answer**************
 (deftemplate question "application might ask these question"
     (slot text)  ;; question text   
@@ -221,24 +237,34 @@ note that any score equal to 5 means the candidate has creative coding solution 
 		(ident emotion)
 		(text "Which emotion is the strongest for the CEO during interview 0:Neutral 1:Anxiety 2:Joy 3:Midly Sad 4:Fear 5:Anger (0-5)?")
 	)
-        (question
+    (question
 		(ident emotionLevel)
 		(text "What is the level of this emotion during the interview (0-5)?")
 	)
-        (question
+    (question
 		(ident polarized)
 		(text "Is this emotion due to pre-existing mooods(0) or due to the candidate (1)?")
 	)
-        (question
+    (question
 		(ident candidateForSTG)
 		(text "Might the candidate help in achieving short term goal(0-No 1-Yes)?")
 	)
-        (question
+    (question
 		(ident stereotype)
 		(text "Is the candidate good or bad based on CEO's stereotype on the candidate (0=Best; 5=Worst)?")
 	)
+	(question
+		(ident referenceDep)
+		(text "Is the candidate better compare to the one just interviewed before (0-No 1-Yes)?")
+	)
+	(question
+		(ident susceptibility)
+		(text "Is the CEO a highly susceptible person (0-No 1-Yes)?")
+	)
 	;(CEOask emotion)
 	;(CEOask emotionLevel)
+	;(CEOask susceptibility)
+	;(CEOask referenceDep)
 	;(CEOask polarized)
 	;(CEOask stereotype)	
 	;(CEOask candidateForSTG)
@@ -251,9 +277,19 @@ note that any score equal to 5 means the candidate has creative coding solution 
 )
 
 (defglobal ?*thres* = 75)
+(defglobal ?*suscep* = 1)
 
 ;;***********CEO rules ********************
 ;;*******Pre-existing emotions Rules**
+;;Susceptibility level of the CEO increases the strength of emotional effects on the hiring decision
+(defrule susceptible
+	(answer (ident susceptibility) (text ?susceptibility))
+	(test (eq ?susceptibility 1))
+	=>
+	(bind ?*suscep* (* ?*suscep* 1.5))
+	
+)
+
 ;;Set pasing score to 75 for neutral or sad moods
 (defrule neutralOrSad
 	(answer (ident emotion) (text ?emotion))
@@ -282,7 +318,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (>= ?emotionLevel 3))
 	(test (eq ?emotion 2))
 	=>
-	(bind ?*thres* (- ?*thres* 10))
+	(bind ?*thres* (- ?*thres* (* 10 suscep)))
 	(printout t "CEO is joyful." crlf)
 )
 
@@ -295,7 +331,7 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (eq ?emotion 4))
 	(test (>= ?stg 1))
 	=>
-	(bind ?*thres* (- ?*thres* 10))
+	(bind ?*thres* (- ?*thres* (* 10 suscep)))
 	(printout t "CEO is fearful, and the candidate might help in achieving Short Term Goal." crlf)
 )
 
@@ -308,25 +344,23 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (eq ?emotion 5))
 	(test (>= ?stereotype 3))
 	=>
-	(bind ?*thres* (+ ?*thres* 10))
+	(bind ?*thres* (+ ?*thres* (* 10 suscep)))
 	(printout t "CEO is angry, and the candidate is not good based on his stereotype." crlf)
 )
 
 ;;***** Emotions during interview - Rules ***********
 ;;Further decrease passing score by 5 if emotion is due to candidate (for joy and fear)
 (defrule polarizedDecrease
-	(checkPolarized)
 	(answer (ident polarized) (text ?polarized))
 	(answer (ident emotion) (text ?emotion))
 	(test (or (eq ?emotion 2) (eq ?emotion 3)))
 	(test (eq ?polarized 1))
 	=>
-	(bind ?*thres* (- ?*thres* 5))
+	(bind ?*thres* (- ?*thres* (* 5 suscep)))
 )
 
 ;;Further increase passing score by 5 if emotion is due to candidate (for anger)
 (defrule polarizedIncrease
-	(checkPolarized)
 	(answer (ident polarized) (text ?polarized))
 	(answer (ident emotion) (text ?emotion))
 	(answer (ident stereotype) (text ?stereotype))
@@ -334,8 +368,18 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(test (eq ?emotion 5))
 	(test (eq ?polarized 1))
 	=>
-	(bind ?*thres* (+ ?*thres* 5))
+	(bind ?*thres* (+ ?*thres* (* 5 suscep)))
 )
+
+;;Decrease passing score by 5 if the CEO feels current candidate is better then the previous candidate(s)
+(defrule referenceDependence
+	(answer (ident referenceDep) (text ?referenceDep))
+	(test (eq ?referenceDep 1))
+	=>
+	(bind ?*thres* (- ?*thres* (* 5 suscep)))
+)
+
+
 
 ;;*****Disqualify/Exceptional Rules *************
 ;;elimination heuristic - trusworthyness is a must
@@ -464,3 +508,5 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(bind ?ans (ask-user ?text))
 	(assert (answer (ident ?id) (text ?ans)))
 )
+Contact GitHub API Training Shop Blog About
+© 2016 GitHub, Inc. Terms Privacy Security Status Help
