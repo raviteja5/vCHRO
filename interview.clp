@@ -492,5 +492,3 @@ note that any score equal to 5 means the candidate has creative coding solution 
 	(bind ?ans (ask-user ?text))
 	(assert (answer (ident ?id) (text ?ans)))
 )
-Contact GitHub API Training Shop Blog About
-© 2016 GitHub, Inc. Terms Privacy Security Status Help
